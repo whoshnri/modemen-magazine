@@ -101,7 +101,7 @@ export default function SignupPage() {
               </div>
 
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 mt-1 bg-black-secondary border border-border flex-shrink-0" required />
+                <input type="checkbox" className="w-4 h-4 mt-1 bg-black-secondary border border-border shrink-0" required />
                 <span className="text-xs text-muted-foreground">
                   I agree to the{' '}
                   <a href="#" className="text-gold-primary hover:text-gold-secondary transition-colors">
