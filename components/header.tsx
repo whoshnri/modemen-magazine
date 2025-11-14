@@ -23,7 +23,7 @@ export function Header() {
         <div className="sm:hidden flex w-full justify-between items-center gap-4 sm:gap-8 ml-auto">
           <MobileNav />
 
-          <div className="flex items-center gap-4">
+          <div className="sm:flex hidden items-center gap-4">
             <CartIcon />
             <AccountMenu />
           </div>
