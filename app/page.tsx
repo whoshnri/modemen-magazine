@@ -141,7 +141,7 @@ export default function HomePage() {
               <h2 className="text-3xl sm:text-4xl font-bold tracking-widest mb-8 sm:mb-12">CURATED SELECTION</h2>
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
                 {/* Vertical Ad Sidebar */}
-                <div className="lg:col-span-1 gap-3 grid">
+                <div className="lg:col-span-1 grid gap-3  ">
                   <VerticalAd
                     title="Premium"
                     description="Explore our exclusive collection of luxury items."
@@ -180,7 +180,7 @@ export default function HomePage() {
           <motion.section variants={itemVariants} className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
             <div className="max-w-6xl mx-auto">
               <div className="border border-border p-8 sm:p-12 text-center">
-                <h2 className="text-3xl sm:text-4xl font-bold tracking-widest mb-4">STAY LUXE</h2>
+                <h2 className="text-3xl sm:text-4xl font-bold tracking-widest mb-4">DON&apos;T MISS OUT</h2>
                 <p className="text-muted-foreground mb-8 max-w-2xl mx-auto text-sm sm:text-base text-balance">
                   Subscribe to receive exclusive stories, insider tips, and the latest in luxury lifestyle directly to your inbox.
                 </p>

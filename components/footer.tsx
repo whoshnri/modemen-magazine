@@ -54,9 +54,9 @@ export function Footer() {
       {/* Newsletter Section */}
       <div className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
+          <div className="grid grid-cols-1 md:flex flex-row-reverse justify-between gap-8 sm:gap-12">
             {/* Newsletter Signup */}
-            <div>
+            <div className='max-w-lg'>
               <h3 className="text-2xl font-bold tracking-widest mb-4">NEWSLETTER</h3>
               <p className="text-muted-foreground mb-6 text-sm sm:text-base">
                 Subscribe to receive curated stories, exclusive insights, and the latest luxury trends directly to your inbox.

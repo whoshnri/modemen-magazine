@@ -32,7 +32,7 @@ export function RecommendedItems({ items, onAddToCart, columns = 3 }: Recommende
             borderColor: hoveredId === item.id ? '#d4af37' : '#2a2a2a'
           }}
         >
-          <div className="h-80 overflow-hidden bg-black-secondary">
+          <div className="h-78 overflow-hidden bg-black-secondary">
             <img
               src={item.image || "/placeholder.svg"}
               alt={item.name}
