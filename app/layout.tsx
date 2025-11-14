@@ -9,7 +9,7 @@ const cormorantGaramond = Cormorant_Garamond({
 })
 
 export const metadata: Metadata = {
-  title: 'Mode Men Mag | Fashion, Lifestyle & Culture',
+  title: 'Modemen Mag | Fashion, Lifestyle & Culture',
   description: 'Premium editorial content featuring men\'s fashion, lifestyle, and high-end culture',
   icons: {
     icon: '/icon.svg',

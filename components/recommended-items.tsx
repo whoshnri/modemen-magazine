@@ -56,7 +56,7 @@ export function RecommendedItems({ items, onAddToCart, columns = 3 }: Recommende
               <span className="text-lg font-bold text-gold-primary">${item.price.toFixed(2)}</span>
               <button
                 onClick={() => onAddToCart?.(item)}
-                className="text-xs font-bold tracking-widest text-foreground hover:text-gold-primary transition-colors uppercase"
+                className="text-xs hover:underline underline-offset-4 cursor-pointer font-bold tracking-widest text-foreground hover:text-gold-primary transition-colors uppercase"
               >
                 ADD TO CART
               </button>

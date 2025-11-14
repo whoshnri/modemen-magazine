@@ -71,7 +71,7 @@ export default function HomePage() {
           </motion.section>
 
           {/* Horizontal Ad */}
-          <motion.section variants={itemVariants} className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
+          <motion.section variants={itemVariants} className="border-b border-border px-3 sm:px-6 py-3 sm:py-6">
             <div className="max-w-6xl mx-auto">
               <HorizontalAd
                 title="Discover Elegance"
@@ -83,7 +83,7 @@ export default function HomePage() {
           </motion.section>
 
           {/* Featured Stories */}
-          <motion.section variants={itemVariants} className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
+          <motion.section variants={itemVariants} className="border-b border-border px-3 sm:px-6 py-3 sm:py-6">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-3xl sm:text-4xl font-bold tracking-widest mb-8 sm:mb-12">FEATURED STORIES</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
@@ -95,7 +95,7 @@ export default function HomePage() {
           </motion.section>
 
           {/* Single Ad Full Width */}
-          <motion.section variants={itemVariants} className="border-b border-border px-4 sm:px-6 py-0">
+          <motion.section variants={itemVariants} className="border-b border-border px-3 sm:px-6 py-3 sm:py-6">
             <div className="max-w-6xl mx-auto w-full">
               <SingleAd
                 image="/luxury-fashion-runway-show.jpg"
@@ -141,13 +141,29 @@ export default function HomePage() {
               <h2 className="text-3xl sm:text-4xl font-bold tracking-widest mb-8 sm:mb-12">CURATED SELECTION</h2>
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
                 {/* Vertical Ad Sidebar */}
-                <div className="lg:col-span-1">
+                <div className="lg:col-span-1 gap-3 grid">
                   <VerticalAd
                     title="Premium"
                     description="Explore our exclusive collection of luxury items."
                     image="/luxury-premium-products.jpg"
                     width="w-full"
-                    backgroundColor="#d4af37"
+                    backgroundColor=""
+                    textColor="#0a0a0a"
+                  />
+                  <VerticalAd
+                    title="Limited Edition"
+                    description="Last chance to own these exclusive pieces."
+                    image="/luxury-premium-products.jpg"
+                    width="w-full"
+                    backgroundColor=""
+                    textColor="#0a0a0a"
+                  />
+                   <VerticalAd
+                    title="Old School Luxury"
+                    description="From watches to trench coats, get vintage, right here."
+                    image="/luxury-premium-products.jpg"
+                    width="w-full"
+                    backgroundColor=""
                     textColor="#0a0a0a"
                   />
                 </div>

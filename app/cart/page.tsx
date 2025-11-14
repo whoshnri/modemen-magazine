@@ -75,7 +75,7 @@ export default function CartPage() {
                   <div className="space-y-6">
                     {cartItems.map((item) => (
                       <div key={item.id} className="border border-border p-6 flex gap-6">
-                        <div className="w-32 h-32 flex-shrink-0 bg-black-secondary overflow-hidden">
+                        <div className="w-32 h-32 shrink-0 bg-black-secondary overflow-hidden">
                           <img
                             src={item.image || "/placeholder.svg"}
                             alt={item.name}
@@ -107,7 +107,7 @@ export default function CartPage() {
                             </div>
                             <button
                               onClick={() => removeItem(item.id)}
-                              className="ml-auto text-sm font-bold text-muted-foreground hover:text-destructive transition-colors uppercase"
+                              className="ml-auto text-sm font-bold text-muted-foreground hover:text-destructive transition-colors uppercase hover:underline underline-offset-4 cursor-pointer"
                             >
                               REMOVE
                             </button>
@@ -144,7 +144,7 @@ export default function CartPage() {
                     </button>
                     
                     <Link
-                      href="/articles"
+                      href="/shop"
                       className="block text-center px-4 py-4 border border-border text-foreground font-bold tracking-widest hover:border-gold-primary hover:text-gold-primary transition-colors"
                     >
                       CONTINUE SHOPPING

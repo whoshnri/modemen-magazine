@@ -34,7 +34,7 @@ export function VerticalAd({
       }}
     >
       {image && (
-        <div className="w-full h-64">
+        <div className="w-full max-h-64">
           <img
             src={image || "/placeholder.svg"}
             alt={title || 'Advertisement'}

@@ -12,7 +12,11 @@ export function NewsletterPopup() {
     const handleScroll = () => {
       const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100
       
-      if (scrollPercentage > 30 && !isVisible && !localStorage.getItem('newsletter-dismissed')) {
+      if(localStorage.getItem("remind-later") === "true" && (localStorage.getItem("show-again-timestamp") === null || Date.now() >= parseInt(localStorage.getItem("show-again-timestamp")!))) {
+        setIsVisible(false)
+      }
+      
+      if (scrollPercentage > 30 && !isVisible && !localStorage.getItem('newsletter-dismissed') && !(localStorage.getItem("remind-later") === "true" && (localStorage.getItem("show-again-timestamp") === null || Date.now() < parseInt(localStorage.getItem("show-again-timestamp")!)))) {
         setIsVisible(true)
       }
     }
@@ -34,6 +38,8 @@ export function NewsletterPopup() {
 
   const handleRemindLater = () => {
     setIsVisible(false)
+    localStorage.setItem('remind-later', 'true')
+    localStorage.setItem("show-again-timestamp", (Date.now() + 24 * 60 * 60 * 1000).toString())
   }
 
   const handleClose = () => {
@@ -67,7 +73,7 @@ export function NewsletterPopup() {
             </button>
 
             <div className="p-8">
-              <h2 className="text-3xl font-bold tracking-widest mb-3">STAY LUXE</h2>
+              <h2 className="text-3xl font-bold tracking-widest mb-3">Never Lose Touch! </h2>
               <p className="text-muted-foreground mb-6">
                 Subscribe to Mode Men Mag for exclusive style tips, insider fashion trends, and curated luxury lifestyle content delivered directly to your inbox.
               </p>
