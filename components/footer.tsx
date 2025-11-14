@@ -1,0 +1,131 @@
+'use client'
+
+import Link from 'next/link'
+import { useState } from 'react'
+
+export function Footer() {
+  const [email, setEmail] = useState('')
+  const [subscribed, setSubscribed] = useState(false)
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (email) {
+      setSubscribed(true)
+      setEmail('')
+      setTimeout(() => setSubscribed(false), 3000)
+    }
+  }
+
+  return (
+    <footer className="bg-black-primary border-t border-border">
+      {/* Store Section */}
+      <div className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
+        <div className="max-w-6xl mx-auto">
+          <h3 className="text-2xl sm:text-3xl font-bold tracking-widest mb-6 sm:mb-8">CURATED STORE</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            <a href="/store/watches" className="group">
+              <div className="border border-border p-4 sm:p-6 hover:border-gold-primary transition-colors">
+                <p className="text-sm sm:text-base font-bold tracking-widest group-hover:text-gold-primary transition-colors">WATCHES</p>
+                <p className="text-xs text-muted-foreground mt-2">Luxury Timepieces</p>
+              </div>
+            </a>
+            <a href="/store/accessories" className="group">
+              <div className="border border-border p-4 sm:p-6 hover:border-gold-primary transition-colors">
+                <p className="text-sm sm:text-base font-bold tracking-widest group-hover:text-gold-primary transition-colors">ACCESSORIES</p>
+                <p className="text-xs text-muted-foreground mt-2">Premium Essentials</p>
+              </div>
+            </a>
+            <a href="/store/fashion" className="group">
+              <div className="border border-border p-4 sm:p-6 hover:border-gold-primary transition-colors">
+                <p className="text-sm sm:text-base font-bold tracking-widest group-hover:text-gold-primary transition-colors">FASHION</p>
+                <p className="text-xs text-muted-foreground mt-2">Designer Collections</p>
+              </div>
+            </a>
+            <a href="/store/lifestyle" className="group">
+              <div className="border border-border p-4 sm:p-6 hover:border-gold-primary transition-colors">
+                <p className="text-sm sm:text-base font-bold tracking-widest group-hover:text-gold-primary transition-colors">LIFESTYLE</p>
+                <p className="text-xs text-muted-foreground mt-2">Luxury Living</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Newsletter Section */}
+      <div className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
+            {/* Newsletter Signup */}
+            <div>
+              <h3 className="text-2xl font-bold tracking-widest mb-4">NEWSLETTER</h3>
+              <p className="text-muted-foreground mb-6 text-sm sm:text-base">
+                Subscribe to receive curated stories, exclusive insights, and the latest luxury trends directly to your inbox.
+              </p>
+              <form onSubmit={handleSubscribe} className="flex flex-col gap-3">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="px-4 py-3 bg-black-secondary border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:border-gold-primary transition-colors text-sm"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-3 bg-gold-primary text-black-primary font-bold tracking-widest transition-all hover:bg-gold-secondary text-sm"
+                >
+                  SUBSCRIBE
+                </button>
+                {subscribed && (
+                  <p className="text-sm text-gold-primary">Thank you for subscribing!</p>
+                )}
+              </form>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-2xl font-bold tracking-widest mb-6">EXPLORE</h3>
+              <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                <div>
+                  <p className="text-xs font-bold tracking-widest text-gold-primary mb-3 sm:mb-4">CONTENT</p>
+                  <ul className="space-y-2">
+                    <li><Link href="/articles" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Articles</Link></li>
+                    <li><Link href="/fashion" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Fashion</Link></li>
+                    <li><Link href="/lifestyle" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Lifestyle</Link></li>
+                    <li><Link href="/beauty" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Beauty</Link></li>
+                    <li><Link href="/culture" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Culture</Link></li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-xs font-bold tracking-widest text-gold-primary mb-3 sm:mb-4">COMPANY</p>
+                  <ul className="space-y-2">
+                    <li><Link href="#" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">About Us</Link></li>
+                    <li><Link href="#" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Contact</Link></li>
+                    <li><Link href="#" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Privacy Policy</Link></li>
+                    <li><Link href="#" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Terms & Conditions</Link></li>
+                    <li><Link href="#" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Advertise</Link></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Footer */}
+      <div className="px-4 sm:px-6 py-6 sm:py-8">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
+          <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
+            © 2025 Mode Men Mag. All rights reserved. | Est. 2025
+          </div>
+          <div className="flex gap-4 sm:gap-6">
+            <a href="#" className="text-xs sm:text-sm text-muted-foreground hover:text-gold-primary transition-colors">Instagram</a>
+            <a href="#" className="text-xs sm:text-sm text-muted-foreground hover:text-gold-primary transition-colors">Twitter</a>
+            <a href="#" className="text-xs sm:text-sm text-muted-foreground hover:text-gold-primary transition-colors">LinkedIn</a>
+            <a href="#" className="text-xs sm:text-sm text-muted-foreground hover:text-gold-primary transition-colors">YouTube</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}

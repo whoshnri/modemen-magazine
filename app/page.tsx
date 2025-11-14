@@ -1,103 +1,186 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { Header } from '@/components/header'
+import { Footer } from '@/components/footer'
+import { CookieBanner } from '@/components/cookie-banner'
+import { NewsletterPopup } from '@/components/newsletter-popup'
+import { PageLoader } from '@/components/page-loader'
+import { ArticleCard } from '@/components/article-card'
+import { RecommendedItems } from '@/components/recommended-items'
+import { HorizontalAd } from '@/components/horizontal-ad'
+import { VerticalAd } from '@/components/vertical-ad'
+import { SingleAd } from '@/components/single-ad'
+import { motion } from 'framer-motion'
+import { mockArticles, mockProducts, getFeaturedArticles } from '@/lib/mock-data'
+
+export default function HomePage() {
+  const featuredArticles = getFeaturedArticles()
+  const allCategories = ['Fashion', 'Lifestyle', 'Beauty', 'Culture', 'Watches', 'Travel']
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 3.2
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8 }
+    }
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-black-primary flex flex-col">
+      <PageLoader />
+      <CookieBanner />
+      <NewsletterPopup />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <Header />
+
+        <main className="flex-1">
+          {/* Hero Section */}
+          <motion.section variants={itemVariants} className="border-b border-border px-4 sm:px-6 py-12 sm:py-24">
+            <div className="max-w-6xl mx-auto text-center">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-widest mb-6 sm:mb-8 leading-tight text-balance">
+                THE ART OF<br />
+                <span className="text-gold-primary">LUXURY</span>
+              </h1>
+              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 text-balance">
+                Discover curated stories on fashion, lifestyle, beauty, and culture from the world's most compelling voices.
+              </p>
+              <a
+                href="/articles"
+                className="inline-block px-6 sm:px-8 py-3 sm:py-4 bg-gold-primary text-black-primary font-bold tracking-widest hover:bg-gold-secondary transition-colors text-sm sm:text-base"
+              >
+                EXPLORE NOW
+              </a>
+            </div>
+          </motion.section>
+
+          {/* Horizontal Ad */}
+          <motion.section variants={itemVariants} className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
+            <div className="max-w-6xl mx-auto">
+              <HorizontalAd
+                title="Discover Elegance"
+                description="Explore our curated collection of premium lifestyle products and exclusive editorial content."
+                image="/luxury-lifestyle-collection.jpg"
+                link="#"
+              />
+            </div>
+          </motion.section>
+
+          {/* Featured Stories */}
+          <motion.section variants={itemVariants} className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-widest mb-8 sm:mb-12">FEATURED STORIES</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+                {featuredArticles.map((article) => (
+                  <ArticleCard key={article.id} {...article} featured={true} />
+                ))}
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Single Ad Full Width */}
+          <motion.section variants={itemVariants} className="border-b border-border px-4 sm:px-6 py-0">
+            <div className="max-w-6xl mx-auto w-full">
+              <SingleAd
+                image="/luxury-fashion-runway-show.jpg"
+                height="h-64 sm:h-96 md:h-screen"
+              >
+                <div className="text-center text-white">
+                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-widest">LIMITED COLLECTION</h3>
+                  <p className="text-xs sm:text-sm tracking-widest mt-2">Exclusively Curated</p>
+                </div>
+              </SingleAd>
+            </div>
+          </motion.section>
+
+          {allCategories.map((category) => {
+            const categoryArticles = mockArticles
+              .filter(article => article.category === category)
+              .slice(0, 6)
+
+            if (categoryArticles.length === 0) return null
+
+            return (
+              <motion.section key={category} variants={itemVariants} className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
+                <div className="max-w-6xl mx-auto">
+                  <div className="flex items-center justify-between mb-8 sm:mb-12">
+                    <h2 className="text-3xl sm:text-4xl font-bold tracking-widest">{category.toUpperCase()}</h2>
+                    <a href={`/${category.toLowerCase()}`} className="text-sm text-gold-primary hover:text-gold-secondary transition-colors font-bold tracking-widest">
+                      VIEW ALL →
+                    </a>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+                    {categoryArticles.map((article) => (
+                      <ArticleCard key={article.id} {...article} />
+                    ))}
+                  </div>
+                </div>
+              </motion.section>
+            )
+          })}
+
+          {/* Recommended Products with Vertical Ads */}
+          <motion.section variants={itemVariants} className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-widest mb-8 sm:mb-12">CURATED SELECTION</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
+                {/* Vertical Ad Sidebar */}
+                <div className="lg:col-span-1">
+                  <VerticalAd
+                    title="Premium"
+                    description="Explore our exclusive collection of luxury items."
+                    image="/luxury-premium-products.jpg"
+                    width="w-full"
+                    backgroundColor="#d4af37"
+                    textColor="#0a0a0a"
+                  />
+                </div>
+
+                {/* Products Grid */}
+                <div className="lg:col-span-3">
+                  <RecommendedItems items={mockProducts} columns={3} />
+                </div>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Newsletter CTA */}
+          <motion.section variants={itemVariants} className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
+            <div className="max-w-6xl mx-auto">
+              <div className="border border-border p-8 sm:p-12 text-center">
+                <h2 className="text-3xl sm:text-4xl font-bold tracking-widest mb-4">STAY LUXE</h2>
+                <p className="text-muted-foreground mb-8 max-w-2xl mx-auto text-sm sm:text-base text-balance">
+                  Subscribe to receive exclusive stories, insider tips, and the latest in luxury lifestyle directly to your inbox.
+                </p>
+                <a
+                  href="#newsletter"
+                  className="inline-block px-6 sm:px-8 py-3 sm:py-4 bg-gold-primary text-black-primary font-bold tracking-widest hover:bg-gold-secondary transition-colors text-sm sm:text-base"
+                >
+                  SUBSCRIBE
+                </a>
+              </div>
+            </div>
+          </motion.section>
+        </main>
+
+        <Footer />
+      </motion.div>
     </div>
-  );
+  )
 }
