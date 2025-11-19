@@ -16,6 +16,16 @@ export function Footer() {
     }
   }
 
+  const links = [
+    { label: "Business", href: "/business" },
+    { label: "Entertainment", href: "/entertainment" },
+    { label: "Events", href: "/events" },
+    { label: "Health", href: "/health" },
+    { label: "Politics", href: "/politics" },
+    { label: "Sports", href: "/sports" },
+    { label: "Fashion", href: "/fashion" },
+  ];
+
   return (
     <footer className="bg-black-primary border-t border-border">
       {/* Store Section */}
@@ -89,21 +99,23 @@ export function Footer() {
                 <div>
                   <p className="text-xs font-bold tracking-widest text-gold-primary mb-3 sm:mb-4">CONTENT</p>
                   <ul className="space-y-2">
-                    <li><Link href="/articles" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Articles</Link></li>
-                    <li><Link href="/fashion" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Fashion</Link></li>
-                    <li><Link href="/lifestyle" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Lifestyle</Link></li>
-                    <li><Link href="/beauty" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Beauty</Link></li>
-                    <li><Link href="/culture" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Culture</Link></li>
+                    {links.map((link) => (
+                      <li key={link.href}>
+                        <Link href={`/articles${link.href}`} className="text-base text-muted-foreground hover:text-gold-primary transition-colors">
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
                   </ul>
-                </div>
+                </div> 
                 <div>
                   <p className="text-xs font-bold tracking-widest text-gold-primary mb-3 sm:mb-4">COMPANY</p>
                   <ul className="space-y-2">
-                    <li><Link href="#" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">About Us</Link></li>
-                    <li><Link href="#" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Contact</Link></li>
-                    <li><Link href="#" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Privacy Policy</Link></li>
-                    <li><Link href="#" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Terms & Conditions</Link></li>
-                    <li><Link href="#" className="text-sm text-muted-foreground hover:text-gold-primary transition-colors">Advertise</Link></li>
+                    <li><Link href="#" className="text-base text-muted-foreground hover:text-gold-primary transition-colors">About Us</Link></li>
+                    <li><Link href="#" className="text-base text-muted-foreground hover:text-gold-primary transition-colors">Contact</Link></li>
+                    <li><Link href="#" className="text-base text-muted-foreground hover:text-gold-primary transition-colors">Privacy Policy</Link></li>
+                    <li><Link href="#" className="text-base text-muted-foreground hover:text-gold-primary transition-colors">Terms & Conditions</Link></li>
+                    <li><Link href="#" className="text-base text-muted-foreground hover:text-gold-primary transition-colors">Advertise</Link></li>
                   </ul>
                 </div>
               </div>

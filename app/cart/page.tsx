@@ -2,51 +2,41 @@
 
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-
-interface CartItem {
-  id: string
-  name: string
-  price: number
-  quantity: number
-  image: string
-}
+import { useRouter } from 'next/navigation'
+import { ShopProvider, useShop } from '@/components/shop-context'
+import { initiateOrder } from '@/app/actions/storeOperations'
+import { toast } from 'sonner'
+import { useSession } from '@/hooks/use-session'
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: '1',
-      name: 'Limited Edition Perfume',
-      price: 250,
-      quantity: 1,
-      image: '/luxury-perfume-bottle.png'
-    },
-    {
-      id: '2',
-      name: 'Silk Pillowcase Set',
-      price: 180,
-      quantity: 2,
-      image: '/luxury-silk-pillowcase.jpg'
-    }
-  ])
+  const router = useRouter()
+  const {session} = useSession()
+  const { cart, removeFromCart, updateQuantity, cartTotal, itemCount, loading } = useShop()
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  const tax = subtotal * 0.1
-  const total = subtotal + tax
-
-  const updateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(id)
-    } else {
-      setCartItems(cartItems.map(item =>
-        item.id === id ? { ...item, quantity } : item
-      ))
-    }
+  if(!session){
+    setShowLogin(true)
   }
 
-  const removeItem = (id: string) => {
-    setCartItems(cartItems.filter(item => item.id !== id))
+  // Tax and total are now derived from the context's cartTotal
+  const tax = (cartTotal || 0) * 0.1 // Example 10% tax rate
+  const total = (cartTotal || 0) + tax
+
+  const handleCheckout = async () => {
+    setIsProcessing(true)
+    const result = await initiateOrder()
+
+    if (result.success && result.order) {
+      toast.success("Order created! Redirecting to checkout...")
+      // Redirect to a dedicated checkout or order confirmation page
+      router.push(`/orders/${result.order.id}`)
+    } else {
+      toast.error(result.error || "Failed to create order.")
+      setIsProcessing(false)
+    }
   }
 
   return (
@@ -58,34 +48,33 @@ export default function CartPage() {
           <div className="max-w-6xl mx-auto">
             <h1 className="text-4xl font-bold tracking-widest mb-12">SHOPPING CART</h1>
 
-            {cartItems.length === 0 ? (
+            {itemCount === 0 || !cart && !loading  ? (
               <div className="text-center py-20">
                 <p className="text-muted-foreground mb-6">Your cart is empty</p>
                 <Link
-                  href="/articles"
+                  href="/shop"
                   className="inline-block px-8 py-3 bg-gold-primary text-black-primary font-bold tracking-widest hover:bg-gold-secondary transition-colors"
                 >
                   CONTINUE SHOPPING
                 </Link>
               </div>
-            ) : (
+            ) : session && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                {/* Cart Items */}
                 <div className="lg:col-span-2">
                   <div className="space-y-6">
-                    {cartItems.map((item) => (
+                    {cart?.map((item) => (
                       <div key={item.id} className="border border-border p-6 flex gap-6">
                         <div className="w-32 h-32 shrink-0 bg-black-secondary overflow-hidden">
                           <img
-                            src={item.image || "/placeholder.svg"}
-                            alt={item.name}
+                            src={item.product.image || "/placeholder.svg"}
+                            alt={item.product.name}
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="flex-1 flex flex-col justify-between">
                           <div>
-                            <h3 className="text-lg font-bold tracking-wide mb-2">{item.name}</h3>
-                            <p className="text-gold-primary font-bold">${item.price.toFixed(2)}</p>
+                            <h3 className="text-lg font-bold tracking-wide mb-1">{item.product.name}</h3>
+                            <p className="text-gold-primary font-bold mt-2">${item.product.price.toFixed(2)}</p>
                           </div>
                           <div className="flex items-center gap-4">
                             <div className="flex border border-border">
@@ -106,7 +95,7 @@ export default function CartPage() {
                               </button>
                             </div>
                             <button
-                              onClick={() => removeItem(item.id)}
+                              onClick={() => removeFromCart(item.id)}
                               className="ml-auto text-sm font-bold text-muted-foreground hover:text-destructive transition-colors uppercase hover:underline underline-offset-4 cursor-pointer"
                             >
                               REMOVE
@@ -115,37 +104,52 @@ export default function CartPage() {
                         </div>
                       </div>
                     ))}
+                    {
+                      !cart && loading && <p>Loading cart items...</p>
+                    }
+                    {
+                      showLogin && (
+                        <div className="text-center py-20">
+                          <p className="text-muted-foreground mb-6">Please log in to view your cart.</p>
+                          <Link
+                            href="/login"
+                            className="inline-block px-8 py-3 bg-gold-primary text-black-primary font-bold tracking-widest hover:bg-gold-secondary transition-colors"
+                          >
+                            LOGIN
+                          </Link>
+                        </div>
+                      )
+                    }
                   </div>
                 </div>
 
-                {/* Order Summary */}
                 <div className="lg:col-span-1">
                   <div className="border border-border p-8 sticky top-6">
                     <h2 className="text-xl font-bold tracking-widest mb-6">ORDER SUMMARY</h2>
-                    
                     <div className="space-y-4 mb-6 pb-6 border-b border-border">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Subtotal</span>
-                        <span>${subtotal.toFixed(2)}</span>
+                        <span>${cartTotal?.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Tax (10%)</span>
+                        <span className="text-muted-foreground">Tax (Est. 10%)</span>
                         <span>${tax.toFixed(2)}</span>
                       </div>
                     </div>
-
                     <div className="flex justify-between mb-8">
                       <span className="font-bold tracking-widest">TOTAL</span>
                       <span className="text-lg font-bold text-gold-primary">${total.toFixed(2)}</span>
                     </div>
-
-                    <button className="w-full px-4 py-4 bg-gold-primary text-black-primary font-bold tracking-widest hover:bg-gold-secondary transition-colors mb-3">
-                      PROCEED TO CHECKOUT
+                    <button
+                      onClick={handleCheckout}
+                      disabled={isProcessing}
+                      className="w-full px-4 py-4 bg-gold-primary text-black-primary font-bold tracking-widest hover:bg-gold-secondary transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
+                    >
+                      {isProcessing ? "PROCESSING..." : "PROCEED TO CHECKOUT"}
                     </button>
-                    
                     <Link
                       href="/shop"
-                      className="block text-center px-4 py-4 border border-border text-foreground font-bold tracking-widest hover:border-gold-primary hover:text-gold-primary transition-colors"
+                      className="mt-3 block text-center px-4 py-4 border border-border text-foreground font-bold tracking-widest hover:border-gold-primary hover:text-gold-primary transition-colors"
                     >
                       CONTINUE SHOPPING
                     </Link>

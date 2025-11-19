@@ -2,9 +2,20 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { useShop } from './shop-context'
+import { Poppins } from 'next/font/google'
+
+
+const PoppinsFont = Poppins({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+})
 
 export function CartIcon() {
-  const [cartCount, setCartCount] = useState(0)
+  const { cart } = useShop()
+  const cartCount = cart ? cart.length : 0
+
+
 
   return (
     <Link href="/cart" className="relative flex items-center justify-center group">
@@ -22,7 +33,7 @@ export function CartIcon() {
         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
       </svg>
       {cartCount > 0 && (
-        <span className="absolute -top-2 -right-2 bg-gold-primary text-black-primary text-xs font-bold px-2 py-1">
+        <span className={`${PoppinsFont.className} absolute -top-2 -right-2 bg-white group-hover:bg-gold-primary text-black-primary text-xs w-5 h-5 rounded-full flex items-center justify-center border-2 border-black-primary transition-colors duration-300 font-black`}>
           {cartCount}
         </span>
       )}

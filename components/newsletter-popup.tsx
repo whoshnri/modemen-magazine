@@ -51,7 +51,7 @@ export function NewsletterPopup() {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black-primary bg-opacity-80 backdrop-blur-sm px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black-primary/10 backdrop-blur-sm px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

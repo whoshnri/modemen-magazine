@@ -5,8 +5,13 @@ import { Footer } from '@/components/footer'
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useToast } from '@/components/toast/use-toast'
+import { createUser } from '../actions/auth'
+import { useRouter } from 'next/navigation'
 
 export default function SignupPage() {
+  const { showToast } = useToast();
+  const router = useRouter();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -22,14 +27,37 @@ export default function SignupPage() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    setLoading(true)
     e.preventDefault()
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match')
-      return
+      showToast('Passwords do not match', 'error');
+      setLoading(false);
+      return;
+    }else{
+      const isCreated = await createUser(
+        formData.fullName,
+        formData.email,
+        formData.password
+      );
+      setLoading(false);
+      if(isCreated.status === 'success'){
+        showToast('Account created successfully! Please log in.', 'success');
+        setFormData({
+          fullName: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+        });
+        router.push('/login');
+      }else if(isCreated.status === 'exists'){
+        showToast('An account with this email already exists.', 'error');
+      }else if(isCreated.status === 'invalid_email'){
+        showToast('Please enter a valid email address.', 'error');
+      }else{
+        showToast('An error occurred while creating the account. Please try again.', 'error');
+      }
     }
-    setLoading(true)
-    setTimeout(() => setLoading(false), 1500)
   }
 
   return (
@@ -72,7 +100,7 @@ export default function SignupPage() {
                   className="w-full px-4 py-3 bg-black-secondary border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:border-gold-primary transition-colors text-sm"
                   required
                 />
-              </div>
+              </div> 
 
               <div>
                 <label className="block text-xs font-bold tracking-widest text-gold-primary mb-3">PASSWORD</label>

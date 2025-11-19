@@ -57,7 +57,7 @@ export function MobileNav() {
                   transition={{ delay: index * 0.05 }}
                 >
                   <Link
-                    href={item.href}
+                    href={`/articles${item.href}`}
                     onClick={() => setIsOpen(false)}
                     className="block px-6 py-4 text-sm font-bold tracking-widest border-b border-border hover:bg-black-secondary hover:text-gold-primary transition-colors"
                   >

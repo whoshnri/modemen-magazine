@@ -5,16 +5,28 @@ import { Footer } from '@/components/footer'
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useToast } from '@/components/toast/use-toast'
+import { useRouter } from 'next/navigation'
+import { loginUser } from '../actions/auth'
 
 export default function LoginPage() {
+  const {showToast} = useToast()
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => setLoading(false), 1500)
+    const isLoggedIn = await loginUser(email, password)
+    if (isLoggedIn) {
+      showToast("Login Successful!")
+      router.refresh()
+    } else {
+      showToast("Login Failed! Please check your credentials.", "error")
+    }
+    setLoading(false)
   }
 
   return (
@@ -57,12 +69,9 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 bg-black-secondary border border-border" />
-                  <span className="text-muted-foreground">Remember me</span>
-                </label>
-                <a href="#" className="text-gold-primary hover:text-gold-secondary transition-colors">
+              <div className="flex justify-end items-center text-sm">
+              
+                <a href="#" className="text-gold-primary hover:underline underline-offset-2 transition-colors">
                   Forgot password?
                 </a>
               </div>

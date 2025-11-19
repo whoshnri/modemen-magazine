@@ -117,62 +117,7 @@ For consumers, this transition requires patience—accepting potentially longer 
   },
 ]
 
-export const mockProducts = [
-  {
-    id: '1',
-    name: 'Limited Edition Eau de Parfum',
-    price: 280,
-    image: '/luxury-perfume-bottle.png',
-    description: 'Exquisite fragrance with top notes of bergamot and jasmine',
-    category: 'Beauty',
-    featured: true
-  },
-  {
-    id: '2',
-    name: 'Premium Silk Pillowcase Set',
-    price: 180,
-    image: '/luxury-silk-pillowcase.jpg',
-    description: 'Pure mulberry silk for optimal skin and hair health',
-    category: 'Lifestyle',
-    featured: false
-  },
-  {
-    id: '3',
-    name: 'Swiss Luxury Watch',
-    price: 2400,
-    image: '/swiss-luxury-watch.jpg',
-    description: 'Precision timepiece with mechanical movement',
-    category: 'Accessories',
-    featured: true
-  },
-  {
-    id: '4',
-    name: 'Cashmere Wool Blend Coat',
-    price: 1200,
-    image: '/cashmere-wool-coat.jpg',
-    description: 'Italian tailored elegance in premium fibers',
-    category: 'Fashion',
-    featured: false
-  },
-  {
-    id: '5',
-    name: 'Luxury Grooming Kit',
-    price: 320,
-    image: '/luxury-grooming-set.jpg',
-    description: 'Complete grooming essentials with premium ingredients',
-    category: 'Beauty',
-    featured: false
-  },
-  {
-    id: '6',
-    name: 'Italian Leather Briefcase',
-    price: 950,
-    image: '/luxury-leather-briefcase.jpg',
-    description: 'Handcrafted leather with lifetime warranty',
-    category: 'Accessories',
-    featured: true
-  },
-]
+
 
 export const categories = ['Fashion', 'Lifestyle', 'Beauty', 'Culture', 'Watches', 'Travel']
 
@@ -195,3 +140,159 @@ export function getRelatedArticles(currentId: string, count: number = 3) {
     .filter(article => article.id !== currentId)
     .slice(0, count)
 }
+
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  description: string;
+  category: 'Grooming' | 'Accessories' | 'Apparel';
+  featured?: boolean;
+}
+
+export interface MagazineIssue {
+  id: string;
+  title: string;
+  price: number;
+  image: string;
+  description: string;
+  issueNumber: number;
+}
+
+// --- MOCK PRODUCT DATA ---
+export const mockProducts: Product[] = [
+  {
+    id: '1',
+    name: 'Limited Edition Eau de Parfum',
+    price: 280,
+    image: '/shop/luxury-perfume-bottle.png',
+    description: 'Exquisite fragrance with top notes of bergamot and jasmine.',
+    category: 'Grooming',
+    featured: true
+  },
+  {
+    id: '2',
+    name: 'Artisan Leather Wallet',
+    price: 150,
+    image: '/shop/leather-wallet.png',
+    description: 'Hand-stitched full-grain leather wallet with a minimalist design.',
+    category: 'Accessories',
+  },
+  {
+    id: '3',
+    name: 'The Monarch Chronograph',
+    price: 650,
+    image: '/shop/classic-watch.png',
+    description: 'A timeless timepiece with a stainless steel case and sapphire crystal.',
+    category: 'Accessories',
+    featured: true
+  },
+  {
+    id: '4',
+    name: 'Silk & Cashmere Scarf',
+    price: 220,
+    image: '/shop/cashmere-scarf.png',
+    description: 'An exceptionally soft scarf, woven from the finest silk and cashmere.',
+    category: 'Apparel',
+  },
+  {
+    id: '5',
+    name: 'Hydrating Beard Oil',
+    price: 45,
+    image: '/shop/beard-oil.png',
+    description: 'A nourishing blend of argan and jojoba oils for a healthy shine.',
+    category: 'Grooming',
+  },
+  {
+    id: '6',
+    name: 'Merino Wool Overcoat',
+    price: 850,
+    image: '/shop/wool-overcoat.png',
+    description: 'A sharp, tailored overcoat crafted from pure merino wool.',
+    category: 'Apparel',
+  },
+   {
+    id: '7',
+    name: 'Limited Edition Eau de Parfum',
+    price: 280,
+    image: '/luxury-perfume-bottle.png',
+    description: 'Exquisite fragrance with top notes of bergamot and jasmine',
+    category: 'Grooming',
+    featured: true
+  },
+  {
+    id: '8',
+    name: 'Premium Silk Pillowcase Set',
+    price: 180,
+    image: '/luxury-silk-pillowcase.jpg',
+    description: 'Pure mulberry silk for optimal skin and hair health',
+    category: 'Apparel',
+    featured: false
+  },
+  {
+    id: '9',
+    name: 'Swiss Luxury Watch',
+    price: 2400,
+    image: '/swiss-luxury-watch.jpg',
+    description: 'Precision timepiece with mechanical movement',
+    category: 'Accessories',
+    featured: true
+  },
+  {
+    id: '410',
+    name: 'Cashmere Wool Blend Coat',
+    price: 1200,
+    image: '/cashmere-wool-coat.jpg',
+    description: 'Italian tailored elegance in premium fibers',
+    category: 'Apparel',
+    featured: false
+  },
+  {
+    id: '11',
+    name: 'Luxury Grooming Kit',
+    price: 320,
+    image: '/luxury-grooming-set.jpg',
+    description: 'Complete grooming essentials with premium ingredients',
+    category: 'Grooming',
+    featured: false
+  },
+  {
+    id: '12',
+    name: 'Italian Leather Briefcase',
+    price: 950,
+    image: '/luxury-leather-briefcase.jpg',
+    description: 'Handcrafted leather with lifetime warranty',
+    category: 'Accessories',
+    featured: true
+  },
+];
+
+// --- MOCK DIGITAL MAGAZINE DATA ---
+export const mockMagazineIssues: MagazineIssue[] = [
+  {
+    id: 'mag-1',
+    title: 'The Vanguard Issue',
+    price: 15.99,
+    image: '/shop/mag-cover-1.png',
+    description: 'Featuring innovators and leaders shaping the future of style and business.',
+    issueNumber: 42,
+  },
+  {
+    id: 'mag-2',
+    title: 'The Autumn Collection',
+    price: 15.99,
+    image: '/shop/mag-cover-2.png',
+    description: 'A deep dive into this season\'s essential trends, textures, and palettes.',
+    issueNumber: 41,
+  },
+  {
+    id: 'mag-3',
+    title: 'The Art of Living Well',
+    price: 15.99,
+    image: '/shop/mag-cover-3.png',
+    description: 'Explore the world of fine dining, travel, and personal growth.',
+    issueNumber: 40,
+  }
+];

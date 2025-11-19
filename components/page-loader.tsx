@@ -15,18 +15,28 @@ export function PageLoader() {
 
   return (
     <AnimatePresence mode="wait">
-      {" "}
       <motion.div
         className="fixed inset-0 z-50 bg-black-primary flex flex-col items-center justify-center overflow-hidden"
         initial={{ opacity: 1 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        exit={{
+          opacity: 0,
+          scale: 1.05,
+          transition: {
+            duration: 1.2,  
+            ease: "easeInOut",
+          },
+        }}
       >
         <motion.h1
           className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-widest text-gold-primary mb-4"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -30 }}
+          exit={{
+            opacity: 0,
+            y: -20,
+            transition: { duration: 1, ease: "easeInOut" },
+          }}
           transition={{ duration: 1, delay: 0.5 }}
         >
           MODEMEN

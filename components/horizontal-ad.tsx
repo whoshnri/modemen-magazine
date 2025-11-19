@@ -33,7 +33,7 @@ export function HorizontalAd({
       }}
     >
       {image && (
-        <div className="w-1/3 flex-shrink-0">
+        <div className="w-1/3 shrink-0">
           <img
             src={image || "/placeholder.svg"}
             alt={title || 'Advertisement'}
@@ -41,8 +41,8 @@ export function HorizontalAd({
           />
         </div>
       )}
-      <div className="flex-1" style={{ color: textColor }}>
-        {title && <h3 className="text-xl font-bold tracking-widest mb-2">{title}</h3>}
+      <div className="flex-1 hidden sm:block" style={{ color: textColor }}>
+        {title && <h3 className="text-xl font-bold text-gold-primary tracking-widest mb-2">{title}</h3>}
         {description && <p className="text-sm leading-relaxed">{description}</p>}
       </div>
       {children}
