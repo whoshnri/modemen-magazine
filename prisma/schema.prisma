@@ -3,9 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite" // "postgresql" or "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "postgresql" // postgresql or sqlite
+  url = env("DATABASE_URL")
 }
+
 
 enum Tag {
   POLITICS

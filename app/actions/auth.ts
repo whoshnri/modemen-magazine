@@ -1,6 +1,6 @@
 "use server";
 
-import client from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 
@@ -48,7 +48,7 @@ export async function getActiveUserFromCookie() {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("sessionToken")?.value;
   if (!sessionToken) return null;
-  const session = await client.user.findUnique({
+  const session = await  prisma?.user.findUnique({
     where: { id: sessionToken },
     select: { 
         id: true,
@@ -68,13 +68,13 @@ export async function createUser(
   if (!isValidEmail(email)) {
     return {status: 'invalid_email'};
   }
-  const existingUser = await client.user.findUnique({ where: { email } });
+  const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     return {status: 'exists' };
   }
   const hashedPassword = await hashPassword(password);
   try {
-    const newUser = await client.user.create({
+    const newUser = await prisma.user.create({
       data: {
         name: fullName,
         email,
@@ -89,7 +89,7 @@ export async function createUser(
 
 // --- login user ---
 export async function loginUser(email: string, password: string) {
-  const user = await client.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     throw new Error("User not found");
   }

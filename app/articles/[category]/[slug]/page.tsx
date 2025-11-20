@@ -54,7 +54,7 @@ export default function ArticlePage({
     return (
       <div className="min-h-screen bg-black-primary flex flex-col">
         <Header />
-        <main className="flex-1 flex items-center justify-center px-4">
+        <main className="flex-1 flex items-center justify-center p-10">
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-widest mb-4">
               Article Not Found

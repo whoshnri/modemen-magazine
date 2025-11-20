@@ -36,7 +36,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getActiveUserFromCookie();
-  // await runMainCreate();
+  //  runMainCreate();
 
   return (
     <html lang="en">
