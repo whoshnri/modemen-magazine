@@ -29,7 +29,7 @@ interface ShopContextType {
   loading: boolean;
   fetchUserId: () => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
-  itemCount: number | undefined;
+  itemCount: number;
 }
 
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
@@ -69,6 +69,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [shopItems, setShopItems] = useState<Products[] | null>(null);
+  const [itemCount, setItemCount] = useState<number>(0);
 
   useEffect(() => {
     fetchShopItems();
@@ -114,6 +115,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
     if (p) {
       setShopItems(p.products);
     }
+    setLoading(false)
   };
 
   const handleUpdateQuantity = async (itemId: string, quantity: number) => {
@@ -141,12 +143,21 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
     (total, item) => total + item.product.price * item.quantity,
     0
   );
-  const itemCount = cart?.reduce((total, item) => total + item.quantity, 0);
+  
+  useEffect(() => {
+    if (cart) {
+      const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+      setItemCount(totalCount);
+    } else {
+      setItemCount(0);
+    }
+  }, [cart]);
 
   return (
     <ShopContext.Provider
       value={{
         cart,
+        itemCount,
         shopItems,
         isCartOpen,
         fetchUserId,
@@ -157,7 +168,6 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
         closeCart,
         cartTotal,
         updateQuantity: handleUpdateQuantity,
-        itemCount,
       }}
     >
       {children}

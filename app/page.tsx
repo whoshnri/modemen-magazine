@@ -14,8 +14,9 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { fetchHomePageArticles } from "./actions/fetchArticles";
 import { ArticleWithTags } from "./articles/[category]/page";
-import { mockProducts } from "@/lib/mock-data";
 import { NewsletterSection } from "@/components/newsletter-section";
+import { Products, useShop } from "@/components/shop-context";
+import Spinner from "@/components/spinner";
 
 const ArticleCardSkeleton = () => (
   <div className="bg-black-secondary/30 animate-pulse rounded-lg overflow-hidden">
@@ -48,12 +49,14 @@ const SectionSkeleton = ({ title }: { title: string }) => (
 
 export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
+  const {shopItems, loading } = useShop()
   const [featuredArticles, setFeaturedArticles] = useState<ArticleWithTags[]>(
     []
   );
   const [categoryArticlesMap, setCategoryArticlesMap] = useState<{
     [key: string]: ArticleWithTags[];
   }>({});
+  const [products, setProducts ] = useState<Products[] | null>(null)
 
   const allCategories = [
     "POLITICS",
@@ -310,7 +313,8 @@ export default function HomePage() {
                   />
                 </div>
                 <div className="lg:col-span-3">
-                  <RecommendedItems items={mockProducts} columns={3} />
+                 { shopItems && <RecommendedItems items={shopItems} columns={3} />}
+                 {!shopItems && loading && <><Spinner /></> }
                 </div>
               </div>
             </div>

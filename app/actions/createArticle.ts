@@ -83,5 +83,7 @@ async function createStoreItem(){
 
 // one time only
 export async function runMainCreate() {
-  const logs = await createStoreItem();
+  createStoreItem();
+  main()
 }
+  

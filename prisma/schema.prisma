@@ -37,7 +37,9 @@ model User {
   password      String
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  savedArticles Article[]
+  savedArticles Article[] @relation("SavedArticles")
+  savedProducts Product[] @relation("SavedProducts")
+  readList      Issues[]  @relation("SavedIssues")
   sessions      Session[]
   addresses     Address[]
   cart          Cart?
@@ -56,7 +58,7 @@ model Article {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   tags            ArticleTag[] @relation("ArticleTags")
-  savedBy         User[]
+  savedBy         User[]  @relation("SavedArticles")
 }
 
 model Session {
@@ -83,6 +85,16 @@ model Product {
   categories Category[]  @relation("ProductCategory")
   cartItems  CartItem[]
   orderItems OrderItem[]
+  savedBy     User[]    @relation("SavedProducts")
+}
+
+model Issues {
+  id        String     @id @default(cuid())
+  title     String 
+  releaseDate DateTime
+  savedBy  User[] @relation("SavedIssues")
+  createdAt   DateTime @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model Cart {

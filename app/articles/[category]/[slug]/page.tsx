@@ -16,6 +16,7 @@ import {
 import { ArticleRenderer } from "@/components/article-renderer";
 import { HorizontalAd } from "@/components/horizontal-ad";
 import SaveModal from "@/components/hovering-save";
+import Spinner from "@/components/spinner";
 
 export default function ArticlePage({
   params,
@@ -24,6 +25,7 @@ export default function ArticlePage({
 }) {
   const { slug } = use(params);
   const [article, setArticles] = useState<ArticleWithTags | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fectchArticle = async () => {
@@ -31,6 +33,7 @@ export default function ArticlePage({
       if (fetchedArticle.data !== null) {
         setArticles(fetchedArticle.data);
       }
+      setLoading(false);
     };
     fectchArticle();
   }, [slug]);
@@ -50,7 +53,7 @@ export default function ArticlePage({
     fetchRelatedArticles();
   }, [article]);
 
-  if (!article) {
+  if (!article && !loading) {
     return (
       <div className="min-h-screen bg-black-primary flex flex-col">
         <Header />
@@ -71,6 +74,18 @@ export default function ArticlePage({
       </div>
     );
   }
+  if (loading || !article) {
+    return (
+      <div className="min-h-screen bg-black-primary flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center p-10">
+          <Spinner />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   const adsToInject = [
     <HorizontalAd
       key="ad-1"
@@ -183,7 +198,7 @@ export default function ArticlePage({
             </div>
           </div>
         </motion.section>
-
+              
         {/* Read Next Section */}
         <motion.section
           className="border-b border-border px-4 sm:px-6 py-8 sm:py-12"
@@ -215,7 +230,7 @@ export default function ArticlePage({
           </div>
         </motion.section>
       </main>
-      <SaveModal/>
+      <SaveModal type="article" contentID={article.id}/>
       <Footer />
     </div>
   );

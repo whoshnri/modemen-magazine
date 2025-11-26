@@ -3,17 +3,25 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "@/hooks/use-session";
+import { useRouter } from "next/navigation";
 
 export function AccountMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const { session } = useSession();
+  const router = useRouter();
 
   
 
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if(session){
+            router.push("/profile");
+            return;
+          }
+          setIsOpen(!isOpen)
+        }}
         className="flex items-center gap-2 text-sm font-medium tracking-widest text-foreground hover:text-gold-primary transition-colors duration-300 uppercase cursor-pointer"
       >
         <svg
@@ -42,16 +50,6 @@ export function AccountMenu() {
             className="block px-4 py-3 text-sm text-foreground hover:bg-black-tertiary hover:text-gold-primary transition-colors border-t border-border"
           >
             SIGN UP
-          </Link>
-        </div>
-      )}
-      {isOpen && session !== null && (
-        <div className="absolute right-0 mt-4 w-48 bg-black-secondary border border-border">
-          <Link
-            href="/profile"
-            className="block px-4 py-3 text-sm text-foreground hover:bg-black-tertiary hover:text-gold-primary transition-colors uppercase"
-          >
-            {session.name?.split(" ")[0]}&apos;s Profile
           </Link>
         </div>
       )}

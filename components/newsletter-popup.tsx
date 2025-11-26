@@ -9,21 +9,32 @@ export function NewsletterPopup() {
   const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100
-      
-      if(localStorage.getItem("remind-later") === "true" && (localStorage.getItem("show-again-timestamp") === null || Date.now() >= parseInt(localStorage.getItem("show-again-timestamp")!))) {
-        setIsVisible(false)
-      }
-      
-      if (scrollPercentage > 30 && !isVisible && !localStorage.getItem('newsletter-dismissed') && !(localStorage.getItem("remind-later") === "true" && (localStorage.getItem("show-again-timestamp") === null || Date.now() < parseInt(localStorage.getItem("show-again-timestamp")!)))) {
-        setIsVisible(true)
-      }
-    }
+  const handleScroll = () => {
+    const scrollPercentage =
+      (window.scrollY /
+        (document.documentElement.scrollHeight - window.innerHeight)) * 100;
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [isVisible])
+    requestAnimationFrame(() => {
+      if (
+        scrollPercentage > 30 &&
+        !isVisible &&
+        !localStorage.getItem('newsletter-dismissed') &&
+        !(
+          localStorage.getItem("remind-later") === "true" &&
+          (localStorage.getItem("show-again-timestamp") === null ||
+            Date.now() < parseInt(localStorage.getItem("show-again-timestamp")!)
+          )
+        )
+      ) {
+        setIsVisible(true);
+      }
+    });
+  };
+
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, [isVisible]);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,7 +69,7 @@ export function NewsletterPopup() {
           transition={{ duration: 0.3 }}
         >
           <motion.div
-            className="bg-black-secondary border border-border max-w-md w-full"
+            className="bg-black-secondary border border-border max-w-md w-full max-h-[90vh] shadow-lg relative overflow-y-auto"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}

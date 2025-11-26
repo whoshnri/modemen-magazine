@@ -31,26 +31,44 @@ export async function fetchSpecArticles(type: $Enums.Tag, offset: number) {
 }
 
 
-export async function fetchAllArticles(offset: number) {
-  try{
+export async function fetchAllArticles(
+  offset: number = 0,
+  limit : number = 20,
+  search? : string,
+  category : $Enums.Tag | "All" = "All",
+) {
+  try {
+    const whereClause: any = {};
+
+
+
     const articles = await prisma.article.findMany({
-        take: 20,
-        skip: offset,
-        include: {
-          tags: true,
+      where: {
+        tags: category !== "All" ? {
+          some: { name: category },
+        } : undefined,
+        title: search ? {
+          contains: search,
+        } : undefined,
+      },
+      skip: offset,
+      take: limit,
+      orderBy: {
+        publicationDate: 'desc',
+      },
+      include: {
+        tags: {
+          select: { name: true },
         },
+      },
     });
-    if(!articles){
-     return { message : "No articles found", data : [] };
-    }else{
-        return { message : "Articles fetched successfully", data : articles };
-    }
-  }catch(error){
-    console.error("Error fetching articles:", error);
-    return {message : "Error fetching articles", data : [] };
+
+    return { data: articles };
+  } catch (error) {
+    console.error("Failed to fetch articles:", error);
+    return { error: "Could not fetch articles." };
   }
 }
-
 
 export async function getArticleBySlug(slug: string) {
   try{
@@ -128,6 +146,8 @@ export async function fetchHomePageArticles() {
         }
       })
     );
+
+  
 
     const results = await Promise.all(articlesByTagPromises);
 

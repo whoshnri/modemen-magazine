@@ -75,6 +75,17 @@ CREATE TABLE "Product" (
 );
 
 -- CreateTable
+CREATE TABLE "Issues" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "releaseDate" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Issues_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Cart" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -153,11 +164,11 @@ CREATE TABLE "Discount" (
 );
 
 -- CreateTable
-CREATE TABLE "_ArticleToUser" (
+CREATE TABLE "_SavedArticles" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
 
-    CONSTRAINT "_ArticleToUser_AB_pkey" PRIMARY KEY ("A","B")
+    CONSTRAINT "_SavedArticles_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateTable
@@ -166,6 +177,22 @@ CREATE TABLE "_ProductCategory" (
     "B" TEXT NOT NULL,
 
     CONSTRAINT "_ProductCategory_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "_SavedProducts" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_SavedProducts_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "_SavedIssues" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_SavedIssues_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -211,10 +238,16 @@ CREATE INDEX "OrderItem_productId_idx" ON "OrderItem"("productId");
 CREATE UNIQUE INDEX "Discount_code_key" ON "Discount"("code");
 
 -- CreateIndex
-CREATE INDEX "_ArticleToUser_B_index" ON "_ArticleToUser"("B");
+CREATE INDEX "_SavedArticles_B_index" ON "_SavedArticles"("B");
 
 -- CreateIndex
 CREATE INDEX "_ProductCategory_B_index" ON "_ProductCategory"("B");
+
+-- CreateIndex
+CREATE INDEX "_SavedProducts_B_index" ON "_SavedProducts"("B");
+
+-- CreateIndex
+CREATE INDEX "_SavedIssues_B_index" ON "_SavedIssues"("B");
 
 -- AddForeignKey
 ALTER TABLE "ArticleTag" ADD CONSTRAINT "ArticleTag_articleId_fkey" FOREIGN KEY ("articleId") REFERENCES "Article"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -253,13 +286,25 @@ ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_orderId_fkey" FOREIGN KEY ("or
 ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ArticleToUser" ADD CONSTRAINT "_ArticleToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Article"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_SavedArticles" ADD CONSTRAINT "_SavedArticles_A_fkey" FOREIGN KEY ("A") REFERENCES "Article"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ArticleToUser" ADD CONSTRAINT "_ArticleToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_SavedArticles" ADD CONSTRAINT "_SavedArticles_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ProductCategory" ADD CONSTRAINT "_ProductCategory_A_fkey" FOREIGN KEY ("A") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ProductCategory" ADD CONSTRAINT "_ProductCategory_B_fkey" FOREIGN KEY ("B") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_SavedProducts" ADD CONSTRAINT "_SavedProducts_A_fkey" FOREIGN KEY ("A") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_SavedProducts" ADD CONSTRAINT "_SavedProducts_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_SavedIssues" ADD CONSTRAINT "_SavedIssues_A_fkey" FOREIGN KEY ("A") REFERENCES "Issues"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_SavedIssues" ADD CONSTRAINT "_SavedIssues_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

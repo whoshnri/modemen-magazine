@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { getActiveUserFromCookie } from "./auth";
-import { get } from "http";
+import { notFound } from "next/navigation";
+
 
 export async function getCart() {
   const session = await getActiveUserFromCookie();
@@ -301,4 +302,48 @@ export async function fetchShopItemsFromDb() {
   } catch (error) {
     return { success: false, products : null};
   }
+}
+
+
+// Fetch a single product by its ID
+export async function getProductById(productId: string) {
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: {
+      categories: true, 
+    },
+  });
+
+  if (!product) {
+    notFound();
+  }
+
+  return product;
+}
+
+export async function getRelatedProducts(productId: string, categoryId?: string) {
+  if (!categoryId) {
+    return [];
+  }
+
+  const relatedProducts = await prisma.product.findMany({
+    where: {
+      // Find products that have the same category
+      categories: {
+        some: {
+          id: categoryId,
+        },
+      },
+      // Exclude the current product from the list
+      NOT: {
+        id: productId,
+      },
+    },
+    include: {
+      categories : true
+    },
+    take: 3, // Limit to 3 related products
+  });
+
+  return relatedProducts;
 }

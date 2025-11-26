@@ -5,14 +5,14 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 
 // --- helper function to hash passwords ---
-async function hashPassword(password: string): Promise<string> {
+export async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
   return hashedPassword;
 }
 
 // --- helper function to verify hashed passwords ---
-async function verifyPassword(
+export async function verifyPassword(
   password: string,
   hashedPassword: string
 ): Promise<boolean> {
@@ -91,15 +91,15 @@ export async function createUser(
 export async function loginUser(email: string, password: string) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    throw new Error("User not found");
+    return false;
   }
   const isPasswordValid = await verifyPassword(password, user.password);
   if (!isPasswordValid) {
-    throw new Error("Invalid password");
+    return false
   } else {
     const isCookieStored = await storeSessionInCookie(user.id);
     if (!isCookieStored) {
-      throw new Error("Failed to store session cookie");
+      return false;
     } else {
       return true;
     }

@@ -2,6 +2,8 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import loaderimg from "../public/loader.svg";
+import Image from "next/image";
 
 export function PageLoader() {
   const [isLoading, setIsLoading] = useState(true);
@@ -28,8 +30,8 @@ export function PageLoader() {
           },
         }}
       >
-        <motion.h1
-          className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-widest text-gold-primary mb-4"
+        <motion.div
+          className="mb-4"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{
@@ -39,8 +41,8 @@ export function PageLoader() {
           }}
           transition={{ duration: 1, delay: 0.5 }}
         >
-          MODEMEN
-        </motion.h1>
+         <Image src={loaderimg} alt="Loading..." className="max-w-[90vw] max-h-[60vh]" />
+        </motion.div>
       </motion.div>
     </AnimatePresence>
   );

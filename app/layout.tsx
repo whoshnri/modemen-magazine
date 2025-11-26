@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond } from "next/font/google";
+import { Cormorant_Garamond, Inria_Serif } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/toast/toast-provider";
 import { SessionProvider } from "@/context/SessionProvider";
@@ -7,11 +7,10 @@ import { getActiveUserFromCookie } from "./actions/auth";
 import { runMainCreate } from "./actions/createArticle";
 import { ShopProvider } from "@/components/shop-context";
 
-
-const cormorantGaramond = Cormorant_Garamond({
+const inriaSerif = Inria_Serif({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-cormorant",
+  weight: ["300", "400", "700"],
+  variable: "--font-inria",
 });
 
 export const metadata: Metadata = {
@@ -41,7 +40,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${cormorantGaramond.variable} font-sans antialiased bg-black-primary text-foreground`}
+        className={`${inriaSerif.className} font-sans antialiased bg-black-primary text-foreground`}
       >
         <SessionProvider initialSession={session}>
           <ShopProvider>
