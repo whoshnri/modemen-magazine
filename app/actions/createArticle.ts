@@ -2,6 +2,7 @@
 import { $Enums, PrismaClient } from "@prisma/client";
 import data from "@/data.json";
 import prisma from "@/lib/prisma";
+
 async function main() {
   const logs = [];
 

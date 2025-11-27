@@ -11,6 +11,7 @@ type UserSession = {
 
 interface SessionContextType {
   session: UserSession | null;
+  isLoading: boolean;
   fetchSession : () => Promise<void>;
 }
 
@@ -29,7 +30,7 @@ export function SessionProvider({
   children,
   initialSession,
 }: SessionProviderProps) {
-
+  const [isLoading, setIsLoading] = useState(false);
   const [session, setSession] = useState<UserSession | null>(initialSession ? initialSession : null);
 
   const fetchSession = async () => {
@@ -37,6 +38,7 @@ export function SessionProvider({
     if(session && session.id){
       setSession(session);
     }
+    setIsLoading(false);
   }
 
   const value = useMemo(
@@ -47,6 +49,6 @@ export function SessionProvider({
   );
 
   return (
-    <SessionContext.Provider value={{...value, fetchSession}}>{children}</SessionContext.Provider>
+    <SessionContext.Provider value={{...value, fetchSession, isLoading}}>{children}</SessionContext.Provider>
   );
 }
