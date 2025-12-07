@@ -45,7 +45,7 @@ export default async function ProductPage({
 
         {/* "You Might Also Like" Section */}
         {relatedProducts.length > 0 && (
-          <section className="bg-[#0f0f0f] border-t border-border py-20">
+          <section className="bg-[#0f0f0f] border-t border-border py-12">
             <div className="max-w-6xl mx-auto px-6">
               <h2 className="text-3xl font-bold tracking-widest text-center mb-12">
                 YOU MIGHT ALSO LIKE

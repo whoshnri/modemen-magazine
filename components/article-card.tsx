@@ -8,7 +8,7 @@ interface ArticleCardProps {
   title: string;
   category: { name: string }[];
   image: string;
-  date: string;
+  date: Date;
   slug: string;
   author: string;
   featured?: boolean;
@@ -68,7 +68,7 @@ export function ArticleCard({
             </span>
             <span className="text-gold-primary text-sm font-bold">→</span>
           </div>
-          <span className="text-sm text-muted-foreground">{date}</span>
+          {/* <span className="text-sm text-muted-foreground">{date.toLocaleDateString()}</span> */}
         </div>
       </div>
     </Link>

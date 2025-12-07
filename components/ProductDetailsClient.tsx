@@ -44,7 +44,7 @@ export const ProductDetailsClient = ({ product }: { product: ProductWithCategori
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
-         <Link href="/shop" className="flex items-center gap-1 text-lg text-gold-secondary hover:underline underline-offset-2 p-3"><ArrowLeft/>Back to Shop</Link>
+         <Link href={`/shop#${product.id}`} className="flex items-center gap-1 text-lg text-gold-secondary hover:underline underline-offset-2 p-3"><ArrowLeft/>Back to Shop</Link>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
         {/* Left Column: Product Image */}

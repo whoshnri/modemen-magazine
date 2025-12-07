@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
+import { Role } from "@prisma/client";
 
 // --- helper function to hash passwords ---
 export async function hashPassword(password: string): Promise<string> {
@@ -43,20 +44,77 @@ export async function storeSessionInCookie(sessionToken: string) {
   }
 }
 
+export type SafeUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  savedArticles: {
+    id: string;
+    title: string;
+    slug: string;
+    body: string;
+    bannerImage: string | null;
+    featured: boolean;
+    writtenBy: string;
+    publicationDate: Date;
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
+  savedProducts: {
+    id: string;
+    name: string;
+    price: number;
+    stock: number;
+    image: string;
+  }[];
+  cart: {
+    id: string;
+    userId: string;
+    items: {
+      id: string;
+      quantity: number;
+      product: {
+        id: string;
+        name: string;
+        price: number;
+        image: string;
+      };
+    }[];
+  };
+  role: Role; // Added Role
+};
+
+export const getSafeUser = async (user: any) =>
+  user ? { ...user, password: undefined } : null;
+
 // helper function to get active user from cookie store
 export async function getActiveUserFromCookie() {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("sessionToken")?.value;
+
+  // No session token → no user
   if (!sessionToken) return null;
-  const session = await  prisma?.user.findUnique({
-    where: { id: sessionToken },
-    select: { 
-        id: true,
-        email: true,
-        name: true,
-      }
-  });
-  return session || null;
+
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        id: sessionToken,
+      },
+      include: {
+        savedArticles: true,
+        savedProducts: true,
+        cart: { include: { items: { include: { product: true } } } },
+      },
+    });
+
+    const safeUser = await getSafeUser(user)
+    return safeUser
+  } catch (error) {
+    console.error("Error fetching user from session token:", error);
+    return null;
+  }
 }
 
 // --- create user ---
@@ -66,11 +124,11 @@ export async function createUser(
   password: string
 ) {
   if (!isValidEmail(email)) {
-    return {status: 'invalid_email'};
+    return { status: "invalid_email" };
   }
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
-    return {status: 'exists' };
+    return { status: "exists" };
   }
   const hashedPassword = await hashPassword(password);
   try {
@@ -81,9 +139,9 @@ export async function createUser(
         password: hashedPassword,
       },
     });
-    return {status: 'success'};
+    return { status: "success" };
   } catch (err) {
-    return {status: 'error'};
+    return { status: "error" };
   }
 }
 
@@ -95,7 +153,7 @@ export async function loginUser(email: string, password: string) {
   }
   const isPasswordValid = await verifyPassword(password, user.password);
   if (!isPasswordValid) {
-    return false
+    return false;
   } else {
     const isCookieStored = await storeSessionInCookie(user.id);
     if (!isCookieStored) {

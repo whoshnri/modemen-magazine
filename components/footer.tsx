@@ -1,20 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+
+import { FooterNewsletterForm } from "./footer-newsletter-form";
 
 export function Footer() {
-  const [email, setEmail] = useState('')
-  const [subscribed, setSubscribed] = useState(false)
 
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (email) {
-      setSubscribed(true)
-      setEmail('')
-      setTimeout(() => setSubscribed(false), 3000)
-    }
-  }
 
   const links = [
     { label: "Business", href: "/business" },
@@ -71,25 +62,7 @@ export function Footer() {
               <p className="text-muted-foreground mb-6 text-sm sm:text-base">
                 Subscribe to receive curated stories, exclusive insights, and the latest luxury trends directly to your inbox.
               </p>
-              <form onSubmit={handleSubscribe} className="flex flex-col gap-3">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="px-4 py-3 bg-black-secondary border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:border-gold-primary transition-colors text-sm"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-3 bg-gold-primary text-black-primary font-bold tracking-widest transition-all hover:bg-gold-secondary text-sm"
-                >
-                  SUBSCRIBE
-                </button>
-                {subscribed && (
-                  <p className="text-sm text-gold-primary">Thank you for subscribing!</p>
-                )}
-              </form>
+              <FooterNewsletterForm />
             </div>
 
             {/* Quick Links */}
@@ -107,11 +80,11 @@ export function Footer() {
                       </li>
                     ))}
                   </ul>
-                </div> 
+                </div>
                 <div>
                   <p className="text-xs font-bold tracking-widest text-gold-primary mb-3 sm:mb-4">COMPANY</p>
                   <ul className="space-y-2">
-                    <li><Link href="#" className="text-base text-muted-foreground hover:text-gold-primary transition-colors">About Us</Link></li>
+                    <li><Link href="/about" className="text-base text-muted-foreground hover:text-gold-primary transition-colors">About Us</Link></li>
                     <li><Link href="#" className="text-base text-muted-foreground hover:text-gold-primary transition-colors">Contact</Link></li>
                     <li><Link href="#" className="text-base text-muted-foreground hover:text-gold-primary transition-colors">Privacy Policy</Link></li>
                     <li><Link href="#" className="text-base text-muted-foreground hover:text-gold-primary transition-colors">Terms & Conditions</Link></li>

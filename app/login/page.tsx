@@ -7,6 +7,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useToast } from "@/components/toast/use-toast";
 import { useRouter } from "next/navigation";
+import {useSearchParams} from "next/navigation"; 
 import { useSession } from "@/hooks/use-session";
 import { loginUser } from "../actions/auth";
 import Spinner from "@/components/spinner";
@@ -15,7 +16,8 @@ export default function LoginPage() {
   const { session, isLoading } = useSession();
   const { showToast } = useToast();
   const router = useRouter();
-
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/shop";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -108,8 +110,11 @@ export default function LoginPage() {
 
     if (success) {
       showToast("Welcome back!", "success");
-      router.refresh(); // This will revalidate session and redirect via middleware or layout if needed
-      // Optionally: router.push('/profile') or let layout handle redirect
+      if(redirect){
+        router.push(redirect);
+      }else{
+        router.push('/profile');
+      }
     } else {
       showToast("Invalid email or password.", "error");
     }

@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { subscribeToNewsletter } from '@/app/actions/cms/newsletter'
+import { useToast } from '@/components/toast/use-toast'
 
 type NewsletterSectionProps = {
   heading?: string
@@ -20,16 +22,25 @@ export function NewsletterSection({
 }: NewsletterSectionProps) {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const { showToast } = useToast()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (email) {
-      setSubmitted(true)
-      // You can trigger API call here
-      setTimeout(() => {
-        setSubmitted(false)
-        setEmail('')
-      }, 2000)
+      startTransition(async () => {
+        const result = await subscribeToNewsletter(email);
+        if (result.error) {
+          showToast(result.error, 'error');
+        } else if (result.success) {
+          setSubmitted(true)
+          showToast(result.success, 'success');
+          setTimeout(() => {
+            setSubmitted(false)
+            setEmail('')
+          }, 3500)
+        }
+      });
     }
   }
 
@@ -60,12 +71,14 @@ export function NewsletterSection({
                 placeholder="Enter your email"
                 className="w-full px-4 py-3 bg-black-primary border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:border-gold-primary transition-colors text-sm"
                 required
+                disabled={isPending}
               />
               <button
                 type="submit"
-                className="w-full px-4 py-3 bg-gold-primary text-black-primary font-bold tracking-widest hover:bg-gold-secondary transition-colors text-sm cursor-pointer"
+                disabled={isPending}
+                className="w-full px-4 py-3 bg-gold-primary text-black-primary font-bold tracking-widest hover:bg-gold-secondary transition-colors text-sm cursor-pointer disabled:opacity-50"
               >
-                {buttonText}
+                {isPending ? 'SUBSCRIBING...' : buttonText}
               </button>
             </form>
 

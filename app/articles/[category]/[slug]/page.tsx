@@ -128,7 +128,7 @@ export default function ArticlePage({
                 {article.tags.map((tag) => tag.name).join(", ")}
               </span>
               <span className="text-sm font-bold text-muted-foreground">
-                {article.publicationDate.toDateString()}
+                {/* {article.publicationDate.toDateString()} */}
               </span>
             </div>
 
@@ -222,7 +222,7 @@ export default function ArticlePage({
                       ? article.bannerImage
                       : `/placeholders/${article.tags[0].name.toLocaleLowerCase()}.svg`
                   }
-                  date={article.publicationDate.toDateString()}
+                  date={article.publicationDate}
                   author={article.writtenBy}
                 />
               ))}

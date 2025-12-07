@@ -1,16 +1,12 @@
 'use client';
 
-import { getActiveUserFromCookie } from '@/app/actions/auth';
+import { getActiveUserFromCookie, SafeUser } from '@/app/actions/auth';
 import { createContext, useState, useMemo, ReactNode } from 'react';
 
-type UserSession = {
-  id: string;
-  email: string;
-  name?: string | null;
-};
+
 
 interface SessionContextType {
-  session: UserSession | null;
+  session: SafeUser | null;
   isLoading: boolean;
   fetchSession : () => Promise<void>;
 }
@@ -22,7 +18,7 @@ export const SessionContext = createContext<SessionContextType | undefined>(
 
 interface SessionProviderProps {
   children: ReactNode;
-  initialSession: UserSession | null;
+  initialSession: SafeUser | null;
 }
 
 // 4. Create the provider component
@@ -31,7 +27,7 @@ export function SessionProvider({
   initialSession,
 }: SessionProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [session, setSession] = useState<UserSession | null>(initialSession ? initialSession : null);
+  const [session, setSession] = useState<SafeUser | null>(initialSession ? initialSession : null);
 
   const fetchSession = async () => {
     const session = await getActiveUserFromCookie()

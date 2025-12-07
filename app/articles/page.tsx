@@ -11,9 +11,8 @@ import { Article, Tag } from "@prisma/client";
 import { useSearchParams, useRouter } from "next/navigation";
 import Spinner from "@/components/spinner";
 
-const categories : (Tag | "All")[] = [
-  "All", "POLITICS", "FASHION", "BUSINESS", "ENTERTAINMENT", "EVENTS",
-  "HEALTH", "SPORTS", "LIFESTYLE", "MENS_INTEREST", "SELF_IMPROVEMENT",
+const categories: (Tag | "All")[] = [
+  "All", "STYLE", "GROOMING", "CULTURE", "BUSINESS_MONEY", "LIFE", "TECH_INNOVATION"
 ];
 
 type ArticleWithTags = Article & { tags: { name: string }[] };
@@ -32,7 +31,7 @@ interface PageProps {
   searchParams: ReturnType<typeof useSearchParams>;
 }
 
- function Page({ router, searchParams }: PageProps) {
+function Page({ router, searchParams }: PageProps) {
 
 
   const [articles, setArticles] = useState<ArticleWithTags[]>([]);
@@ -43,10 +42,13 @@ interface PageProps {
     searchParams.get("search") || ""
   );
 
+  const term = searchParams.get("search") || ""
+
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false)
 
   // Main data fetching logic, now uses the live searchTerm state
   const loadArticles = async (type: "initial" | "append") => {
@@ -66,12 +68,35 @@ interface PageProps {
         setHasMore(false);
       }
     });
+    setMounted(true)
+
+  };
+
+  const loadArticles2 = async (val: string) => {
+    if (isPending && !hasMore) return;
+
+    startTransition(async () => {
+      const response = await fetchAllArticles(
+        0, 20, val, selectedCategory
+      );
+
+      if (response.data) {
+        setArticles(response.data)
+        setOffset(0 + response.data.length);
+        setHasMore(response.data.length === 20);
+      } else {
+        setHasMore(false);
+      }
+    });
+    setMounted(true)
+
   };
 
   // --- REFACTORED: Handle search on form submission ---
   const handleSearch = (event: React.FormEvent) => {
-    event.preventDefault(); // Prevent full page reload
+    event.preventDefault();
     const params = new URLSearchParams(window.location.search);
+    params.delete("search");
     if (searchTerm) {
       params.set("search", searchTerm);
     } else {
@@ -82,24 +107,34 @@ interface PageProps {
     } else {
       params.delete("category");
     }
-    router.replace(`/articles?${params.toString()}`);
-    loadArticles("initial"); 
+    router.replace(`/articles?${encodeURI(params.toString())}`);
+    loadArticles("initial");
   };
+
+  useEffect(() => {
+    const term = searchParams.get("search")
+    if (term && (term !== searchTerm)) {
+      loadArticles2(term)
+      setSearchTerm(term)
+    }
+  }, [searchParams])
+
+
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (selectedCategory && selectedCategory !== "All") {
       params.set("category", selectedCategory);
+      setMounted(false)
     } else {
       params.delete("category");
     }
-    router.replace(`/articles?${params.toString()}`);
+    router.replace(`/articles?${encodeURIComponent(params.toString())}`);
     loadArticles("initial");
   }, [selectedCategory, router]);
-  
-  // Effect to perform an initial search if URL params exist on page load
+
   useEffect(() => {
-      loadArticles("initial");
+    loadArticles("initial");
   }, []);
 
   return (
@@ -143,20 +178,20 @@ interface PageProps {
           </section>
 
           <motion.section className="px-4 sm:px-6 py-8 sm:py-12">
-            
+
             <div className="max-w-6xl mx-auto">
-              {searchTerm && (
-              <p className="text-sm text-muted-foreground mb-6">
-                Showing results for "<span className="italic">{searchTerm}</span>"
-              </p>
-            )}
+              {term && (
+                <p className="text-sm text-muted-foreground mb-6">
+                  Showing results for "<span className="italic">{term}</span>"
+                </p>
+              )}
               <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {articles.map((article) => (
                   <motion.div key={article.id}>
                     <ArticleCard
                       title={article.title} category={article.tags} id={article.id}
                       image={article.bannerImage || "/placeholder.svg"}
-                      date={new Date(article.publicationDate).toDateString()}
+                      date={new Date(article.publicationDate)}
                       author={article.writtenBy} slug={article.slug}
                     />
                   </motion.div>
@@ -242,11 +277,10 @@ const FilterModal = ({
                     onSelectCategory(category);
                     onClose();
                   }}
-                  className={`px-4 py-2 text-xs font-bold tracking-widest transition-all ${
-                    selectedCategory === category
-                      ? "bg-gold-primary text-black-primary"
-                      : "border border-border text-foreground hover:border-gold-primary"
-                  }`}
+                  className={`px-4 py-2 text-xs font-bold tracking-widest transition-all ${selectedCategory === category
+                    ? "bg-gold-primary text-black-primary"
+                    : "border border-border text-foreground hover:border-gold-primary"
+                    }`}
                 >
                   {category}
                 </button>

@@ -3,22 +3,18 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // postgresql or sqlite
+  provider = "sqlite" // postgresql or sqlite
   url = env("DATABASE_URL")
 }
 
 
 enum Tag {
-  POLITICS
-  FASHION
-  BUSINESS
-  ENTERTAINMENT
-  EVENTS
-  HEALTH
-  SPORTS
-  LIFESTYLE
-  MENS_INTEREST
-  SELF_IMPROVEMENT
+  STYLE
+  GROOMING
+  CULTURE
+  BUSINESS_MONEY
+  LIFE
+  TECH_INNOVATION
 }
 
 model ArticleTag {
@@ -30,11 +26,17 @@ model ArticleTag {
   @@index([articleId])
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
   name          String?
   password      String
+  role          Role      @default(USER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   savedArticles Article[] @relation("SavedArticles")
@@ -44,6 +46,17 @@ model User {
   addresses     Address[]
   cart          Cart?
   orders        Order[]
+  newsletterSubscription NewsletterSubscriber?
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  isSubscribed Boolean  @default(true)
+  userId       String?  @unique
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Article {
@@ -80,6 +93,7 @@ model Product {
   id         String     @id @default(cuid())
   name       String
   price      Float
+  desc       String?
   stock      Int         @default(0)
   image      String
   categories Category[]  @relation("ProductCategory")
@@ -136,8 +150,8 @@ model Address {
 }
 
 enum OrderStatus {
+  PAID
   PENDING
-  PROCESSING
   SHIPPED
   DELIVERED
   CANCELED
@@ -147,11 +161,13 @@ model Order {
   id                String      @id @default(cuid())
   orderId           String      @unique @default(cuid())
   userId            String
+  reference         String?     @unique
   user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items             OrderItem[]
   status            OrderStatus @default(PENDING)
   subTotal          Float
   total             Float
+  paid              Boolean     @default(false)
   shippingAddressId String
   billingAddressId  String
   shippingAddress   Address     @relation("ShippingAddress", fields: [shippingAddressId], references: [id], onDelete: NoAction)

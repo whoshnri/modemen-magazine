@@ -2,128 +2,173 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Products, useShop } from "@/components/shop-context";
+import {  useShop } from "@/components/shop-context";
 import { useSession } from "@/hooks/use-session";
 import { LoginDialog } from "@/components/LoginModal";
 import { useToast } from "@/components/toast/use-toast";
 import { useState, useEffect } from "react";
-import { Bookmark, SaveIcon } from "lucide-react";
-import { saveProduct } from "@/app/actions/saver";
-import { error } from "console";
+import { Heart } from "lucide-react";
+import { saveProduct, unsaveProduct } from "@/app/actions/saver"; // add unsave!
 
+type Products = {
+  name: string;
+  id: string;
+  price: number;
+  stock: number;
+  image: string;
+};
 
 export const ProductCard = ({ item }: { item: Products }) => {
-  const { addToCart } = useShop();
+  const { addToCart, updateQuantity, cart, removeFromCart } = useShop();
   const { session } = useSession();
   const { showToast } = useToast();
+  const [saving, setSaving] = useState(false);
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+  const [justSaved, setJustsaved] = useState(false)
 
-  useEffect(() => {
-    if (!session) {
-      setIsLoginDialogOpen(false);
-    }
-  }, [session]);
+  // Derive everything from latest cart & session → no stale state!
+  const cartItem = cart?.find((c) => c.productId === item.id);
+  const isInCart = !!cartItem;
+  const quantity = cartItem?.quantity || 0;
+  const cartItemId = cartItem?.id || "";
+
+  const [isSaved, setIsSaved] = useState(session?.savedProducts.some((p) => p.id === item.id) ?? false);
 
   const formattedPrice = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
   }).format(item.price);
 
+  // Keep everything in sync when cart or session changes
+  useEffect(() => {
+    // optional: close login dialog if user logs in
+    if (session) setIsLoginDialogOpen(false);
+  }, [session]);
+
   const handleAddToCart = async () => {
     if (!session) {
       setIsLoginDialogOpen(true);
       return;
     }
+
     const res = await addToCart(item.id, 1, session.id);
-    if (!res?.message && res?.error) {
-      showToast(
-        res.error.toUpperCase() || "Failed to add iatem to cart.",
-        "error"
-      );
+    if (res?.error) {
+      showToast(res.error.toUpperCase(), "error");
     } else {
-      showToast(
-        res?.message?.toUpperCase() || "Item added to cart!",
-        "success"
-      );
+      showToast("Item added to cart!", "success");
     }
   };
 
-  const handleSave = async() => {
+  const handleSaveToggle = async () => {
     if (!session) {
       setIsLoginDialogOpen(true);
       return;
-    }else{
-      const res = await saveProduct(session.id, item.id);
-      if (res == false) {
-        showToast(
-          "Failed to save item.",
-          "error"
-        );
+    }
+
+    setSaving(true);
+    try {
+      let success;
+      if (isSaved) {
+        success = await unsaveProduct(session.id, item.id);
+        if (success) {
+          showToast("Removed from saved", "success");
+          setIsSaved(false)
+        }
       } else {
-        showToast(
-          "Item saved!",
-          "success"
-        );
+        success = await saveProduct(session.id, item.id);
+        if (success) {
+          showToast("Saved for later!", "success");
+          setIsSaved(true)
+        }
       }
+      if (!success) {
+        showToast("Something went wrong", "error");
+      }
+    } catch (err) {
+      showToast("Failed to update saved items", "error");
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div className="flex flex-col border border-border hover:shadow-lg transition-shadow">
-      <Link
-        href={`/shop/product/${item.id}`}
-        className="block relative overflow-hidden bg-black-secondary aspect-4/4"
-      >
-        <Image
-          src={item.image}
-          alt={item.name}
-          fill
-          className="object-cover transition-transform duration-500 ease-out"
-        />
-      </Link>
+    <div className="group relative w-full">
+      {/* Image Container with Digital Issue Border Effect */}
+      <div className="relative aspect-[3/4] bg-black-secondary p-2 border border-white/10 transition-all duration-500 group-hover:border-gold-primary/50 group-hover:-translate-y-1">
+        <div className="relative w-full h-full overflow-hidden bg-[#050505]">
+          {item.image ? (
+            <Image
+              src={item.image}
+              alt={item.name}
+              fill
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-neutral-900 text-white/10 text-4xl font-bold">M</div>
+          )}
 
-      <div className="mt-4 text-center">
-        <h3 className="text-base font-bold tracking-wide text-foreground">
-          {item.name}
-        </h3>
-
-        <p className="mt-2 text-gold-primary font-bold tracking-widest">
-          {formattedPrice}
-        </p>
-
-        <div className="grid grid-cols-2 justify-center">
-          <button
-            onClick={handleSave}
-            className="mt-3 text-black-primary font-bold py-4 px-6 tracking-widest bg-white/60 transition-colors border-r flex items-center justify-center gap-3 text-sm border-black-primary hover:bg-white/80 active:bg-white"
-          >
-            <Bookmark className="w-4 h-4" /> SAVE
-          </button>
-          <button
-            onClick={handleAddToCart}
-            className="mt-3 bg-gold-primary text-black-primary font-bold py-4 px-6 tracking-widest hover:bg-gold-secondary active:bg-gold-primary transition-colors flex items-center justify-center gap-2 text-sm"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="w-4 h-4"
+          {/* Quick Actions Overlay (Appears on Hover) */}
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
+            {/* Save Button */}
+            <button
+              onClick={(e) => { e.preventDefault(); handleSaveToggle(); }}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 ${isSaved ? "bg-gold-primary text-black" : "bg-white text-black hover:bg-gold-primary"}`}
+              title={isSaved ? "Remove from Saved" : "Save for Later"}
             >
-              <circle cx="9" cy="21" r="1" />
-              <circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-            </svg>{" "}
-            ADD TO CART
-          </button>
+              <Heart className={`w-5 h-5 ${isSaved ? "fill-black" : ""}`} />
+            </button>
+          </div>
+
+          {/* Status Badge */}
+          {quantity > 0 && (
+            <div className="absolute top-2 left-2 bg-gold-primary text-black text-[10px] font-bold px-2 py-1 uppercase tracking-widest">
+              In Cart ({quantity})
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Correct – opens only after clicking ADD TO CART */}
+      {/* Product Info */}
+      <div className="mt-4 text-center space-y-2">
+        <Link href={`/shop/product/${item.id}`} className="block group/title">
+          <h3 className="text-lg font-bold text-white tracking-wide group-hover/title:text-gold-primary transition-colors line-clamp-1">
+            {item.name}
+          </h3>
+        </Link>
+        <p className="text-gold-primary font-mono text-sm tracking-mid">{formattedPrice}</p>
+
+        {/* Add to Cart / Controls */}
+        <div className="pt-2">
+          {isInCart ? (
+            <div className="flex items-center justify-center gap-4">
+              <button
+                onClick={() => quantity <= 1 ? removeFromCart(cartItemId) : updateQuantity(cartItemId, quantity - 1)}
+                className="w-8 h-8 flex items-center justify-center border border-white/20 text-white hover:border-gold-primary hover:text-gold-primary transition-colors text-lg"
+              >
+                -
+              </button>
+              <span className="text-sm font-bold text-white w-4">{quantity}</span>
+              <button
+                onClick={() => updateQuantity(cartItemId, quantity + 1)}
+                className="w-8 h-8 flex items-center justify-center border border-white/20 text-white hover:border-gold-primary hover:text-gold-primary transition-colors text-lg"
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleAddToCart}
+              className="w-full py-2 border border-white/20 text-white text-xs font-bold uppercase tracking-widest hover:bg-gold-primary hover:text-black hover:border-gold-primary transition-all duration-300"
+            >
+              Add to Cart
+            </button>
+          )}
+        </div>
+      </div>
+
       <LoginDialog
-        header="Just one more step!"
-        text="Please Log In to Add Items to Your Cart"
+        header="Almost There!"
+        text="Please log in to add items to cart or save products"
         isOpen={isLoginDialogOpen}
         onClose={() => setIsLoginDialogOpen(false)}
       />

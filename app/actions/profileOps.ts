@@ -16,6 +16,7 @@ export async function getUserProfilePageData(userId: string) {
         orders: true,
         addresses: true,
         cart: true,
+        newsletterSubscription: true,
       },
     });
     if (!user) {
@@ -92,6 +93,7 @@ export async function updateUserProfile(userId: string, name: string) {
         orders: true,
         addresses: true,
         cart: true,
+        newsletterSubscription: true,
       },
     });
     revalidatePath("/profile");
@@ -138,5 +140,17 @@ export async function changeUserPassword(userId: string, data: FormData) {
     return { success: "Password changed successfully." };
   } catch (error) {
     return { error: "An unexpected error occurred." };
+  }
+}
+
+
+export async function getAddresses(userId: string) {
+  try {
+    const addresses = await prisma.address.findMany({
+      where: { userId: userId },
+    });
+    return { success: "Addresses fetched successfully.", data: addresses };
+  } catch (error) {
+    return { error: "Failed to fetch addresses.", data: null };
   }
 }

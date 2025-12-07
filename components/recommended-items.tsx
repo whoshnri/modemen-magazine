@@ -82,12 +82,6 @@ export function RecommendedItems({
               <span className="text-lg font-bold text-gold-primary">
                 ${item.price.toFixed(2)}
               </span>
-              <button
-                onClick={() => handleAddToCart(item)}
-                className="text-xs hover:underline underline-offset-4 cursor-pointer font-bold tracking-widest text-foreground hover:text-gold-primary transition-colors uppercase"
-              >
-                ADD TO CART
-              </button>
             </div>
           </div>
         </Link>

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useShop } from './shop-context'
 import { Poppins } from 'next/font/google'
+import { useSession } from '@/hooks/use-session'
 
 
 const PoppinsFont = Poppins({
@@ -12,7 +13,10 @@ const PoppinsFont = Poppins({
 })
 
 export function CartIcon() {
-  const { cart,itemCount } = useShop()
+  const { cart, itemCount } = useShop()
+  const { session } = useSession()
+
+  if (!session) return null
 
 
 

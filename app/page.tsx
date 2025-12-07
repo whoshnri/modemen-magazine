@@ -10,8 +10,11 @@ import { RecommendedItems } from "@/components/recommended-items";
 import { HorizontalAd } from "@/components/horizontal-ad";
 import { VerticalAd } from "@/components/vertical-ad";
 import { SingleAd } from "@/components/single-ad";
+import BigArticlePreview from "@/components/big-article-preview";
+import { ArticleListCompact } from "@/components/article-list-compact";
+import { FeaturedStories } from "@/components/featured-stories";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { fetchHomePageArticles } from "./actions/fetchArticles";
 import { ArticleWithTags } from "./articles/[category]/page";
 import { NewsletterSection } from "@/components/newsletter-section";
@@ -49,26 +52,24 @@ const SectionSkeleton = ({ title }: { title: string }) => (
 
 export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
-  const {shopItems, loading } = useShop()
+  const { shopItems, loading } = useShop()
   const [featuredArticles, setFeaturedArticles] = useState<ArticleWithTags[]>(
     []
   );
+  const [isError, setIsError] = useState(false);
+  const [showNewsletter, setShowNewsletter] = useState(false)
   const [categoryArticlesMap, setCategoryArticlesMap] = useState<{
     [key: string]: ArticleWithTags[];
   }>({});
-  const [products, setProducts ] = useState<Products[] | null>(null)
+  const [products, setProducts] = useState<Products[] | null>(null)
 
   const allCategories = [
-    "POLITICS",
-    "FASHION",
-    "BUSINESS",
-    "ENTERTAINMENT",
-    "EVENTS",
-    "HEALTH",
-    "SPORTS",
-    "LIFESTYLE",
-    "MENS_INTEREST",
-    "SELF_IMPROVEMENT",
+    "STYLE",
+    "GROOMING",
+    "CULTURE",
+    "BUSINESS_MONEY",
+    "LIFE",
+    "TECH_INNOVATION",
   ];
 
   const containerVariants = {
@@ -79,31 +80,64 @@ export default function HomePage() {
     },
   };
 
-  useEffect(() => {
-    const loadArticles = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetchHomePageArticles();
-        if (response.data) {
-          setFeaturedArticles(response.data.featuredArticles || []);
-          setCategoryArticlesMap(response.data.featuredArticlesByTag || {});
-        }
-      } catch (error) {
-        console.error("Failed to fetch articles:", error);
-        // Optionally set an error state here
-      } finally {
-        setIsLoading(false);
+  const handleNewsletterClose = () => {
+    setShowNewsletter(false)
+  }
+
+  const loadArticles = useCallback(async () => {
+    setIsLoading(true);
+    setIsError(false);
+    try {
+      const response = await fetchHomePageArticles();
+      if (response.data) {
+        setFeaturedArticles(response.data.featuredArticles || []);
+        setCategoryArticlesMap(response.data.featuredArticlesByTag || {});
       }
+    } catch (error) {
+      console.error("Failed to fetch articles:", error);
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadArticles();
+  }, [loadArticles]);
+
+  // use effect to show the popup
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPercentage =
+        (window.scrollY /
+          (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+
+      requestAnimationFrame(() => {
+        if (
+          scrollPercentage > 30 &&
+          !showNewsletter &&
+          !localStorage.getItem('newsletter-dismissed') &&
+          !(
+            localStorage.getItem("remind-later") === "true" &&
+            (localStorage.getItem("show-again-timestamp") === null ||
+              Date.now() < parseInt(localStorage.getItem("show-again-timestamp")!)
+            )
+          )
+        ) {
+          setShowNewsletter(true);
+        }
+      });
     };
 
-    loadArticles();
-  }, []);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [showNewsletter]);
 
   return (
     <div className="min-h-screen bg-black-primary flex flex-col">
       <PageLoader />
       <CookieBanner />
-      <NewsletterPopup />
+      <NewsletterPopup isVisible={showNewsletter} setIsVisible={handleNewsletterClose} />
 
       <motion.div
         initial="hidden"
@@ -113,26 +147,46 @@ export default function HomePage() {
         <Header />
 
         <main className="flex-1">
-          {/* Hero Section */}
-          <motion.section className="border-b border-border px-4 sm:px-6 py-12 sm:py-24">
-            <div className="max-w-6xl mx-auto text-center">
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-widest mb-6 sm:mb-8 leading-tight text-balance">
-                THE ART OF
-                <br />
-                <span className="text-gold-primary">LUXURY</span>
-              </h1>
-              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 text-balance">
-                Discover curated stories on fashion, lifestyle, beauty, and
-                culture from the world's most compelling voices.
-              </p>
-              <a
-                href="/articles"
-                className="inline-block px-6 sm:px-8 py-3 sm:py-4 bg-gold-primary text-black-primary font-bold tracking-widest hover:bg-gold-secondary transition-colors text-sm sm:text-base"
-              >
-                EXPLORE NOW
-              </a>
+          {isError && (
+            <div className="bg-red-900/20 border-b border-red-500/50 px-4 py-3">
+              <div className="max-w-6xl mx-auto flex items-center justify-between">
+                <p className="text-red-400 text-xs sm:text-sm font-bold tracking-widest uppercase">
+                  Unable to load some content.
+                </p>
+                <button
+                  onClick={loadArticles}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-red-600 text-white font-bold text-[10px] uppercase tracking-widest hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {isLoading ? "RETRYING..." : "RETRY"}
+                </button>
+              </div>
             </div>
-          </motion.section>
+          )}
+          {/* Hero Section */}
+          {featuredArticles.length > 0 ? (
+            <BigArticlePreview article={featuredArticles[0]} />
+          ) : (
+            <motion.section className="border-b border-border px-4 sm:px-6 py-12 sm:py-24">
+              <div className="max-w-6xl mx-auto text-center">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-widest mb-6 sm:mb-8 leading-tight text-balance">
+                  THE ART OF
+                  <br />
+                  <span className="text-gold-primary">LUXURY</span>
+                </h1>
+                <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 text-balance">
+                  Discover curated stories on fashion, lifestyle, beauty, and
+                  culture from the world's most compelling voices.
+                </p>
+                <a
+                  href="/articles"
+                  className="inline-block px-6 sm:px-8 py-3 sm:py-4 bg-gold-primary text-black-primary font-bold tracking-widest hover:bg-gold-secondary transition-colors text-sm sm:text-base"
+                >
+                  EXPLORE NOW
+                </a>
+              </div>
+            </motion.section>
+          )}
 
           {/* Horizontal Ad */}
           <motion.section className="border-b border-border px-3 sm:px-6 py-3 sm:py-6">
@@ -147,36 +201,30 @@ export default function HomePage() {
           </motion.section>
 
           {/* Featured Stories */}
-          {isLoading ? (
-            <SectionSkeleton title="FEATURED STORIES" />
+          {isLoading || isError ? (
+            <SectionSkeleton title="FROM OUR WORLD" />
           ) : (
             featuredArticles.length > 0 && (
-              <motion.section className="border-b border-border px-3 sm:px-6 py-3 sm:py-6">
-                <div className="max-w-6xl mx-auto">
-                  <h2 className="text-3xl sm:text-4xl font-bold tracking-widest mb-8 sm:mb-12">
-                    FEATURED STORIES
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-                    {featuredArticles.map((article) => (
-                      <ArticleCard
-                        key={article.id}
-                        id={article.id}
-                        title={article.title}
-                        image={
-                          article.bannerImage
-                            ? article.bannerImage
-                            : "/luxury-lifestyle-products.jpg"
-                        }
-                        category={article.tags}
-                        date={article.publicationDate.toLocaleDateString()}
-                        author={article.writtenBy}
-                        slug={article.slug}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </motion.section>
+              <FeaturedStories articles={featuredArticles} />
             )
+          )}
+
+          {/* Trending / Latest Compact List */}
+          {featuredArticles.length > 3 && (
+            <motion.section className="border-b border-border px-4 sm:px-6 py-8 sm:py-12 bg-black-secondary/20">
+              <div className="max-w-6xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                  <ArticleListCompact
+                    title="Trending Now"
+                    articles={featuredArticles.slice(1, 4)}
+                  />
+                  <ArticleListCompact
+                    title="Editor's Picks"
+                    articles={featuredArticles.slice(2, 5)}
+                  />
+                </div>
+              </div>
+            </motion.section>
           )}
 
           {/* Single Ad Full Width */}
@@ -199,84 +247,84 @@ export default function HomePage() {
           </motion.section>
 
           {/* Category Sections */}
-          {isLoading
+          {isLoading || isError
             ? allCategories.map((category) => (
-                <SectionSkeleton
-                  key={category}
-                  title={category.toUpperCase()}
-                />
-              ))
+              <SectionSkeleton
+                key={category}
+                title={category.toUpperCase()}
+              />
+            ))
             : allCategories.map((category) => {
-                const categoryArticles = categoryArticlesMap[category] || [];
-                if (categoryArticles.length === 0) return null;
+              const categoryArticles = categoryArticlesMap[category] || [];
+              if (categoryArticles.length === 0) return null;
 
-                return (
-                  <>
-                    <motion.section
-                      key={category}
-                      className="border-b border-border px-4 sm:px-6 py-8 sm:py-12"
-                    >
-                      <div className="max-w-6xl mx-auto">
-                        <div className="flex items-center justify-between mb-8 sm:mb-12">
-                          <h2 className="text-3xl sm:text-4xl font-bold tracking-widest">
-                            {category.toUpperCase().replace("_", " ")}
-                          </h2>
-                          <a
-                            href={`/${category.toLowerCase()}`}
-                            className="text-sm text-gold-primary hover:text-gold-secondary transition-colors font-bold tracking-widest"
-                          >
-                            VIEW ALL →
-                          </a>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-                          {categoryArticles.map((article) => (
-                            <ArticleCard
-                              key={article.id}
-                              id={article.id}
-                              title={article.title}
-                              image={
-                                article.bannerImage
-                                  ? article.bannerImage
-                                  : "/luxury-lifestyle-products.jpg"
-                              }
-                              category={article.tags}
-                              date={article.publicationDate.toLocaleDateString()}
-                              author={article.writtenBy}
-                              slug={article.slug}
-                            />
-                          ))}
-                        </div>
+              return (
+                <>
+                  <motion.section
+                    key={category}
+                    className="border-b border-border px-4 sm:px-6 py-8 sm:py-12"
+                  >
+                    <div className="max-w-6xl mx-auto">
+                      <div className="flex items-center justify-between mb-8 sm:mb-12">
+                        <h2 className="text-3xl sm:text-4xl font-bold tracking-widest">
+                          {category.toUpperCase().replace("_", " ")}
+                        </h2>
+                        <a
+                          href={`/${category.toLowerCase()}`}
+                          className="text-sm text-gold-primary hover:text-gold-secondary transition-colors font-bold tracking-widest"
+                        >
+                          VIEW ALL →
+                        </a>
                       </div>
-                      {category === "EVENTS" && (
-                        <motion.section className=" px-3 sm:px-6 py-3 sm:py-6">
-                          <div className="max-w-6xl mx-auto w-full">
-                            <SingleAd
-                              image="/luxury-fashion-runway-show.jpg"
-                              height="h-64 sm:h-96 md:h-screen"
-                            >
-                              <div className="text-center text-white">
-                                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-widest">
-                                  LIMITED COLLECTION
-                                </h3>
-                                <p className="text-xs sm:text-sm tracking-widest mt-2">
-                                  Exclusively Curated
-                                </p>
-                              </div>
-                            </SingleAd>
-                          </div>
-                        </motion.section>
-                      )}
-                    </motion.section>
-                    {category === "LIFESTYLE" && (
-                      <motion.section className="px-3 border-b sm:px-6 py-3 sm:py-10">
-                        <div className="max-w-6xl mx-auto">
-                          <NewsletterSection />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+                        {categoryArticles.map((article) => (
+                          <ArticleCard
+                            key={article.id}
+                            id={article.id}
+                            title={article.title}
+                            image={
+                              article.bannerImage
+                                ? article.bannerImage
+                                : "/luxury-lifestyle-products.jpg"
+                            }
+                            category={article.tags}
+                            date={article.publicationDate}
+                            author={article.writtenBy}
+                            slug={article.slug}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {category === "EVENTS" && (
+                      <motion.section className=" px-3 sm:px-6 py-3 sm:py-6">
+                        <div className="max-w-6xl mx-auto w-full">
+                          <SingleAd
+                            image="/luxury-fashion-runway-show.jpg"
+                            height="h-64 sm:h-96 md:h-screen"
+                          >
+                            <div className="text-center text-white">
+                              <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-widest">
+                                LIMITED COLLECTION
+                              </h3>
+                              <p className="text-xs sm:text-sm tracking-widest mt-2">
+                                Exclusively Curated
+                              </p>
+                            </div>
+                          </SingleAd>
                         </div>
                       </motion.section>
                     )}
-                  </>
-                );
-              })}
+                  </motion.section>
+                  {category === "LIFESTYLE" && (
+                    <motion.section className="px-3 border-b sm:px-6 py-3 sm:py-10">
+                      <div className="max-w-6xl mx-auto">
+                        <NewsletterSection />
+                      </div>
+                    </motion.section>
+                  )}
+                </>
+              );
+            })}
 
           {/* Recommended Products & Ads */}
           <motion.section className="border-b border-border px-4 sm:px-6 py-8 sm:py-12">
@@ -313,15 +361,15 @@ export default function HomePage() {
                   />
                 </div>
                 <div className="lg:col-span-3">
-                 { shopItems && <RecommendedItems items={shopItems} columns={3} />}
-                 {!shopItems && loading && <><Spinner /></> }
+                  {shopItems && <RecommendedItems items={shopItems} columns={3} />}
+                  {!shopItems && loading && <><Spinner /></>}
                 </div>
               </div>
             </div>
           </motion.section>
 
           {/* Newsletter CTA */}
-          <motion.section className="px-4 sm:px-6 py-8 sm:py-12">
+          {/* <motion.section className="px-4 sm:px-6 py-8 sm:py-12">
             <div className="max-w-6xl mx-auto">
               <NewsletterSection
                 heading="STAY IN THE LOOP"
@@ -331,7 +379,7 @@ export default function HomePage() {
                 showRemindLater={false}
               />
             </div>
-          </motion.section>
+          </motion.section> */}
         </main>
 
         <Footer />

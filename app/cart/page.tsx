@@ -9,42 +9,33 @@ import { initiateOrder } from "@/app/actions/storeOperations";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/use-session";
 import Spinner from "@/components/spinner";
+import { useState } from "react";
 
 export default function CartPage() {
   const router = useRouter();
-  const { session, isLoading} = useSession();
+  const { session, isLoading } = useSession();
   const {
     cart,
+    cartId,
     removeFromCart,
     updateQuantity,
     cartTotal,
     itemCount,
     loading: cartLoading,
   } = useShop();
-  const isProcessing = false; // you'll manage this in handleCheckout
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const tax = (cartTotal || 0) * 0.1;
   const total = (cartTotal || 0) + tax;
 
   const handleCheckout = async () => {
-    if (!session) {
-      toast.error("Please log in to proceed to checkout");
-      router.push("/login?redirect=/cart");
-      return;
-    }
-
-    const result = await initiateOrder();
-
-    if (result.success && result.order) {
-      toast.success("Order created! Redirecting...");
-      router.push(`/orders/${result.order.id}`);
-    } else {
-      toast.error(result.error || "Failed to create order");
-    }
+    setIsProcessing(true);
+    router.push(`/cart/checkout/${cartId}`);
+    setIsProcessing(false);
   };
 
 
-  if (cartLoading || isLoading) {
+  if (cartLoading || isLoading) { 
     return (
       <div className="min-h-screen bg-black-primary flex flex-col">
         <Header />
@@ -131,13 +122,13 @@ export default function CartPage() {
                     key={item.id}
                     className="border border-border p-6 flex gap-6"
                   >
-                    <div className="w-32 h-32 shrink-0 bg-black-secondary overflow-hidden">
+                    <Link href={`/shop/${item.product.id}`} className="w-32 h-32 shrink-0 bg-black-secondary overflow-hidden hover:border-gold-primary transition-colors border">
                       <img
                         src={item.product.image || "/placeholder.svg"}
                         alt={item.product.name}
                         className="w-full h-full object-cover"
                       />
-                    </div>
+                    </Link>
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
                         <h3 className="text-lg font-bold tracking-wide mb-1">

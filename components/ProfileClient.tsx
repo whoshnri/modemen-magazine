@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useTransition, useEffect, FormEvent, Dispatch } from "react";
-import { User, Order, Product, Article, Address } from "@prisma/client";
+import { useState, useTransition, useEffect, FormEvent } from "react";
+import { User, Order, Product, Article, Address, NewsletterSubscriber } from "@prisma/client";
 import { useToast } from "@/components/toast/use-toast";
 import {
   updateUserProfile,
   changeUserPassword,
   deleteAddress,
 } from "@/app/actions/profileOps";
+import { updateNewsletterStatus } from "@/app/actions/cms/newsletter";
 import { unsaveArticle, unsaveProduct } from "@/app/actions/saver";
 import Link from "next/link";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { AddAddressModal } from "./Addaddress";
 
 // --- TYPE DEFINITION ---
@@ -19,6 +21,7 @@ type ProfileUser = User & {
   savedProducts: Product[];
   orders: Order[];
   addresses: Address[];
+  newsletterSubscription: NewsletterSubscriber | null;
 };
 
 // --- MAIN CLIENT COMPONENT ---
@@ -29,7 +32,7 @@ export const ProfileClient = ({
   user: ProfileUser;
   sessionId: string;
 }) => {
-  const [activeTab, setActiveTab] = useState("settings");
+  const [activeTab, setActiveTab] = useState("overview");
 
   // State for data that can be updated live on the client
   const [currentUser, setCurrentUser] = useState(user);
@@ -42,51 +45,100 @@ export const ProfileClient = ({
   }, [user]);
 
   const TABS = [
-    { id: "settings", label: "ACCOUNT SETTINGS" },
-    { id: "activity", label: "ACTIVITY & ADDRESSES" },
+    { id: "overview", label: "Overview" },
+    { id: "orders", label: "Orders" },
+    { id: "saved", label: "Saved Items" },
+    { id: "addresses", label: "Addresses" },
+    { id: "settings", label: "Settings" },
   ];
 
   return (
     <>
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+      <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           {/* Sidebar Navigation */}
-          <aside className="md:col-span-1">
-            <nav className="flex flex-col space-y-2">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-3 text-left font-bold tracking-widest text-sm uppercase transition-colors ${
-                    activeTab === tab.id
-                      ? "bg-gold-primary text-black-primary"
-                      : "text-muted-foreground hover:bg-black-secondary hover:text-foreground"
-                  }`}
+          <aside className="md:col-span-3 lg:col-span-3">
+            <div className="sticky top-24 space-y-8">
+              <div className="hidden md:block">
+                <h2 className="text-xs font-bold text-muted-foreground tracking-[0.2em] mb-4">MENU</h2>
+                <nav className="flex flex-col space-y-1">
+                  {TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`text-left px-4 py-3 text-sm font-bold tracking-widest transition-all duration-300 border-l-2 ${activeTab === tab.id
+                        ? "border-gold-primary text-gold-primary pl-6 bg-white/5"
+                        : "border-transparent text-muted-foreground hover:text-white hover:pl-6"
+                        }`}
+                    >
+                      {tab.label.toUpperCase()}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+              {/* Mobile Nav */}
+              <div className="md:hidden">
+                <select
+                  value={activeTab}
+                  onChange={(e) => setActiveTab(e.target.value)}
+                  className="w-full bg-black-secondary border border-white/20 text-white p-3 font-bold tracking-widest uppercase focus:ring-1 focus:ring-gold-primary outline-none"
                 >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
+                  {TABS.map((tab) => (
+                    <option key={tab.id} value={tab.id}>{tab.label.toUpperCase()}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </aside>
 
           {/* Content Area */}
-          <div className="md:col-span-3">
-            {activeTab === "settings" && (
-              <SettingsView
-                user={currentUser}
-                onProfileUpdate={setCurrentUser}
-              />
-            )}
-            {activeTab === "activity" && (
-              <ActivityView
-                user={currentUser}
-                addresses={addresses}
-                onAddAddressClick={() => setIsModalOpen(true)}
-                onRemoveAddress={(id) =>
-                  setAddresses((addrs) => addrs.filter((a) => a.id !== id))
-                }
-              />
-            )}
+          <div className="md:col-span-9 lg:col-span-9 min-h-[500px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                {activeTab === "overview" && (
+                  <OverviewView user={currentUser} setActiveTab={setActiveTab} />
+                )}
+                {activeTab === "orders" && (
+                  <OrdersView user={currentUser} />
+                )}
+                {activeTab === "saved" && (
+                  <SavedItemsView
+                    products={currentUser.savedProducts}
+                    articles={currentUser.savedArticles}
+                    userId={currentUser.id}
+                    onRemoveProduct={(id) => {
+                      // Basic state update simulation for now, deep update relies on effect or refetch usually
+                      setCurrentUser(prev => ({ ...prev, savedProducts: prev.savedProducts.filter(p => p.id !== id) }))
+                    }}
+                    onRemoveArticle={(id) => {
+                      setCurrentUser(prev => ({ ...prev, savedArticles: prev.savedArticles.filter(a => a.id !== id) }))
+                    }}
+                  />
+                )}
+                {activeTab === "addresses" && (
+                  <AddressBookView
+                    addresses={addresses}
+                    userId={currentUser.id}
+                    onAddAddressClick={() => setIsModalOpen(true)}
+                    onRemoveAddress={(id) =>
+                      setAddresses((addrs) => addrs.filter((a) => a.id !== id))
+                    }
+                  />
+                )}
+                {activeTab === "settings" && (
+                  <SettingsView
+                    user={currentUser}
+                    onProfileUpdate={setCurrentUser}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>
@@ -101,6 +153,98 @@ export const ProfileClient = ({
     </>
   );
 };
+
+// --- SUB-COMPONENTS ---
+
+const OverviewView = ({ user, setActiveTab }: { user: ProfileUser, setActiveTab: (tab: string) => void }) => {
+  return (
+    <div className="space-y-12">
+      <header className="border-b border-white/10 pb-8">
+        <h2 className="text-3xl font-bold text-white mb-2">Hello, {user.name?.split(' ')[0] || "User"}</h2>
+        <p className="text-muted-foreground">Here's a snapshot of your Mode Men account.</p>
+      </header>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div onClick={() => setActiveTab('orders')} className="bg-black-secondary border border-white/10 p-8 cursor-pointer group hover:border-gold-primary transition-colors">
+          <p className="text-gold-primary text-4xl font-bold mb-2 group-hover:scale-110 transition-transform origin-left">{user.orders.length}</p>
+          <p className="text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground group-hover:text-white">Total Orders</p>
+        </div>
+        <div onClick={() => setActiveTab('saved')} className="bg-black-secondary border border-white/10 p-8 cursor-pointer group hover:border-gold-primary transition-colors">
+          <p className="text-gold-primary text-4xl font-bold mb-2 group-hover:scale-110 transition-transform origin-left">{user.savedProducts.length}</p>
+          <p className="text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground group-hover:text-white">Saved Products</p>
+        </div>
+        <div onClick={() => setActiveTab('saved')} className="bg-black-secondary border border-white/10 p-8 cursor-pointer group hover:border-gold-primary transition-colors">
+          <p className="text-gold-primary text-4xl font-bold mb-2 group-hover:scale-110 transition-transform origin-left">{user.savedArticles.length}</p>
+          <p className="text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground group-hover:text-white">Saved Articles</p>
+        </div>
+      </div>
+
+      {user.orders.length > 0 && (
+        <div>
+          <div className="flex justify-between items-end mb-6">
+            <h3 className="text-xl font-bold tracking-widest text-white">RECENT ORDER</h3>
+            <button onClick={() => setActiveTab('orders')} className="text-xs text-gold-primary hover:text-white transition-colors tracking-widest uppercase">View All</button>
+          </div>
+          {/* Render just the first order reusing the card styles roughly or simplified */}
+          <div className="border border-white/10 p-6 bg-black-secondary/50">
+            <div className="flex justify-between items-center mb-4">
+              <p className="font-bold tracking-wide">#{user.orders[0].orderId.substring(0, 8).toUpperCase()}</p>
+              <p className="text-gold-primary font-bold">${user.orders[0].total.toFixed(2)}</p>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              {new Date(user.orders[0].createdAt).toLocaleDateString()} &bull; {user.orders[0].status}
+            </p>
+            <Link href={`/orders/${user.orders[0].id}`} className="text-xs font-bold border-b border-white/20 pb-1 hover:border-gold-primary hover:text-gold-primary transition-colors uppercase tracking-widest">
+              View Order Details
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const OrdersView = ({ user }: { user: ProfileUser }) => {
+  return (
+    <div className="space-y-8">
+      <div className="border-b border-white/10 pb-6">
+        <h2 className="text-2xl font-bold text-white tracking-widest">ORDER HISTORY</h2>
+      </div>
+      {user.orders.length === 0 ? (
+        <EmptyState message="You haven't placed any orders yet." linkHref="/shop" linkText="BROWSE SHOP" />
+      ) : (
+        <div className="space-y-6">
+          {user.orders.map((order) => (
+            <div key={order.id} className="border border-white/10 p-6 bg-black-secondary hover:border-white/30 transition-colors">
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                <div>
+                  <div className="flex items-center gap-4 mb-2">
+                    <h3 className="text-lg font-bold text-white tracking-widest">ORDER #{order.orderId.substring(0, 8).toUpperCase()}</h3>
+                    <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest border ${order.status === 'DELIVERED' ? 'border-green-500 text-green-500' :
+                      order.status === 'PAID' ? 'border-blue-500 text-blue-500' :
+                        order.status === 'PENDING' ? 'border-yellow-500 text-yellow-500' :
+                          'border-red-500 text-red-500'
+                      }`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
+                </div>
+                <div className="text-left md:text-right">
+                  <p className="text-2xl font-bold text-gold-primary mb-2">${order.total.toFixed(2)}</p>
+                  <Link href={`/orders/${order.id}`} className="inline-block text-xs font-bold text-white bg-white/10 px-4 py-2 hover:bg-white hover:text-black-primary transition-colors tracking-widest uppercase">
+                    Manage
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 
 // --- SETTINGS VIEW COMPONENT ---
 const SettingsView = ({
@@ -181,6 +325,25 @@ const SettingsView = ({
           </button>
         </div>
       </div>
+
+      <div className="border border-border p-6">
+        <h3 className="text-xl font-bold tracking-widest mb-4">
+          NEWSLETTER PREFERENCES
+        </h3>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold">Subscribe to Mode Men Newsletter</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Receive exclusive updates, offers, and curated content.
+            </p>
+          </div>
+          <NewsletterToggle
+            userId={user.id}
+            initialStatus={user.newsletterSubscription?.isSubscribed!}
+          />
+        </div>
+      </div>
+
       <div className="border border-border p-6">
         <h3 className="text-xl font-bold tracking-widest mb-4">
           CHANGE PASSWORD
@@ -267,11 +430,14 @@ const ActivityView = ({
                     Date: {new Date(order.createdAt).toLocaleDateString()}
                   </p>
                   <p
-                    className={`mt-2 text-xs font-bold uppercase tracking-widest px-2 py-1 inline-block ${
-                      order.status === "DELIVERED"
+                    className={`mt-2 text-xs font-bold uppercase tracking-widest px-2 py-1 inline-block ${order.status === "DELIVERED"
+                      ? "bg-blue-700"
+                      : order.status === "PAID"
                         ? "bg-green-700"
-                        : "bg-yellow-600"
-                    }`}
+                        : order.status === "PENDING"
+                          ? "bg-yellow-600"
+                          : "bg-red-700"
+                      }`}
                   >
                     {order.status}
                   </p>
@@ -525,3 +691,38 @@ const EmptyState = ({
     )}
   </div>
 );
+
+const NewsletterToggle = ({ userId, initialStatus }: { userId: string, initialStatus: boolean }) => {
+  const [isSubscribed, setIsSubscribed] = useState(initialStatus);
+  const [isPending, startTransition] = useTransition();
+  const { showToast } = useToast();
+
+  const handleToggle = () => {
+    const newStatus = !isSubscribed;
+    setIsSubscribed(newStatus); // Optimistic update locally
+
+    startTransition(async () => {
+      const result = await updateNewsletterStatus(userId, newStatus);
+      if (result.error) {
+        showToast(result.error, "error");
+        setIsSubscribed(!newStatus); // Revert if failed
+      } else {
+        showToast(result.success!, "success");
+      }
+    });
+  };
+
+  return (
+    <button
+      onClick={handleToggle}
+      disabled={isPending}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isSubscribed ? "bg-gold-primary" : "bg-white/20"
+        }`}
+    >
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isSubscribed ? "translate-x-6" : "translate-x-1"
+          }`}
+      />
+    </button>
+  );
+};

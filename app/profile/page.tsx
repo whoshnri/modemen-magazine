@@ -7,7 +7,7 @@ import { redirect, useSearchParams } from "next/navigation";
 import { getUserProfilePageData } from "@/app/actions/profileOps";
 import { ProfileClient } from "@/components/ProfileClient";
 import { Suspense, useEffect, useState } from "react";
-import { Address, Order } from "@prisma/client";
+import { $Enums, Address, Order } from "@prisma/client";
 
 type useData = {
   cart: {
@@ -31,10 +31,19 @@ type useData = {
   savedProducts: {
     name: string;
     id: string;
+    desc: string | null;
     price: number;
     stock: number;
     image: string;
   }[];
+  newsletterSubscription: {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    userId: string | null;
+    email: string;
+    isSubscribed: boolean;
+  } | null;
   readList: {
     id: string;
     title: string;
@@ -51,6 +60,7 @@ type useData = {
   updatedAt: Date;
   email: string;
   password: string;
+  role : $Enums.Role
 };
 
 export default function ProfilePage() {

@@ -30,6 +30,7 @@ interface ShopContextType {
   fetchUserId: () => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   itemCount: number;
+  cartId: string | null;
 }
 
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
@@ -54,7 +55,7 @@ export type Products = {
     name: string;
     id: string;
     description: string | null;
-  }[];
+  }[] | null;
 } & {
   name: string;
   id: string;
@@ -70,7 +71,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [shopItems, setShopItems] = useState<Products[] | null>(null);
   const [itemCount, setItemCount] = useState<number>(0);
-
+  const [cartId, setCartId] = useState<string | null>(null);
   useEffect(() => {
     fetchShopItems();
     fetchUserId();
@@ -87,6 +88,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
       if (!userId) return;
       const serverCart = await getCart();
       setCart(serverCart?.items || null);
+      setCartId(serverCart?.id || null);
       setLoading(false);
     };
     fetchCart();
@@ -168,6 +170,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
         closeCart,
         cartTotal,
         updateQuantity: handleUpdateQuantity,
+        cartId,
       }}
     >
       {children}

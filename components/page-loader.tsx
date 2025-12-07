@@ -9,7 +9,19 @@ export function PageLoader() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Check if we've already shown the loader today
+    const lastShown = localStorage.getItem("page-loader-last-shown");
+    const today = new Date().toDateString();
+
+    if (lastShown === today) {
+      setIsLoading(false);
+      return;
+    }
+
+    // If not shown today, set the flag and start the timer
+    localStorage.setItem("page-loader-last-shown", today);
     const timer = setTimeout(() => setIsLoading(false), 3200);
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -25,7 +37,7 @@ export function PageLoader() {
           opacity: 0,
           scale: 1.05,
           transition: {
-            duration: 1.2,  
+            duration: 1.2,
             ease: "easeInOut",
           },
         }}
@@ -41,7 +53,7 @@ export function PageLoader() {
           }}
           transition={{ duration: 1, delay: 0.5 }}
         >
-         <Image src={loaderimg} alt="Loading..." className="max-w-[90vw] max-h-[60vh]" />
+          <Image src={loaderimg} alt="Loading..." className="max-w-[90vw] max-h-[60vh]" />
         </motion.div>
       </motion.div>
     </AnimatePresence>

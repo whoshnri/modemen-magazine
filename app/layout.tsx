@@ -7,6 +7,8 @@ import { getActiveUserFromCookie } from "./actions/auth";
 import { runMainCreate } from "./actions/createArticle";
 import { ShopProvider } from "@/components/shop-context";
 
+import { SpecialInfoBanner } from "@/components/special-info-banner";
+
 const inriaSerif = Inria_Serif({
   subsets: ["latin"],
   weight: ["300", "400", "700"],
@@ -35,16 +37,37 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getActiveUserFromCookie();
-  //  runMainCreate();
+  const GA_MEASUREMENT_ID = "G-VW4VRMGDFC"
+  // await runMainCreate()
 
   return (
     <html lang="en">
+      <head>
+        {/* Google Analytics Scripts */}
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}', {
+              page_path: window.location.pathname,
+            });
+          `,
+          }}
+        />
+      </head>
       <body
-        className={`${inriaSerif.className} font-sans antialiased bg-black-primary text-foreground`}
+        className={`${inriaSerif.className} font-mono  antialiased bg-black-primary text-foreground`}
       >
+        <SpecialInfoBanner />
         <SessionProvider initialSession={session}>
           <ShopProvider>
-          <ToastProvider>{children}</ToastProvider>
+            <ToastProvider>{children}</ToastProvider>
           </ShopProvider>
         </SessionProvider>
       </body>

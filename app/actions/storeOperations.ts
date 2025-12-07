@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import prisma from "@/lib/prisma";
 import { getActiveUserFromCookie } from "./auth";
 import { notFound } from "next/navigation";
+import { connect } from "http2";
 
 
 export async function getCart() {
@@ -15,7 +16,7 @@ export async function getCart() {
   const user = await prisma.user.findUnique({
     where: { id: session.id },
     include: {
-      cart: { include: { items: {include: { product: true } }, } },
+      cart: { include: { items: { include: { product: true } }, } },
     },
   });
 
@@ -35,7 +36,7 @@ export async function addToCart(
   try {
     let cart = await getCart();
     const product = await prisma.product.findUnique({
-      where: { id: productId},
+      where: { id: productId },
     });
 
     if (!product) {
@@ -49,7 +50,7 @@ export async function addToCart(
           id: `modemen-cart-${Date.now().toLocaleString()}-user-${userId}`,
           userId,
         },
-        include: { items: { include : {product : true} } },
+        include: { items: { include: { product: true } } },
       });
       console.log("Created new cart for user:", userId);
     }
@@ -150,7 +151,21 @@ export async function removeFromCart(itemId: string) {
   }
 }
 
-export async function initiateOrder() {
+export async function getCouponDetails(couponCode: string) {
+  try {
+    const coupon = await prisma.discount.findFirst({
+      where: {
+        code: couponCode.toUpperCase(), isActive: true,
+        validTill: { gte: new Date() },
+      },
+    });
+    return { success: true, coupon };
+  } catch (error) {
+    return { success: false, error: "Failed to get coupon details." };
+  }
+}
+
+export async function initiateOrder(addrId: string, final: number, coupon: string | null) {
   try {
     const cart = await getCart();
     if (!cart || cart.items.length === 0) {
@@ -158,8 +173,9 @@ export async function initiateOrder() {
     }
 
     const shippingAddress = await prisma.address.findFirst({
-      where: { userId: cart.userId, isShipping: true },
+      where: { id: addrId },
     });
+
     if (!shippingAddress) {
       return {
         success: false,
@@ -179,21 +195,34 @@ export async function initiateOrder() {
 
     const order = await prisma.order.create({
       data: {
-        id: `modemen-order-${Date.now().toLocaleString()}-user-${cart.userId}`,
+        id: `modemen-order-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
         userId: cart.userId,
-        subTotal: subTotal,
-        total: subTotal,
+        subTotal,
+        total: Math.min(subTotal, final),
         shippingAddressId: shippingAddress.id,
         billingAddressId: shippingAddress.id,
+        discountId: coupon ? coupon : null,
         items: {
           create: cartItems.map((item) => ({
-            productId: item.productId,
+            product: { connect: { id: item.productId } },
             quantity: item.quantity,
             priceAtPurchase: item.product.price,
           })),
         },
       },
-      include: { items: true },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        discount: true,
+        user: {
+          select: { email: true, name: true },
+        },
+        shippingAddress: true,
+        billingAddress: true,
+      },
     });
 
     revalidatePath("/orders");
@@ -203,52 +232,6 @@ export async function initiateOrder() {
   }
 }
 
-export async function applyDiscount(orderId: string, couponCode: string) {
-  try {
-    const order = await prisma.order.findUnique({ where: { id: orderId } });
-    if (!order || order.status !== "PENDING") {
-      return {
-        success: false,
-        error: "Order not found or cannot be modified.",
-      };
-    }
-
-    const coupon = await prisma.discount.findFirst({
-      where: {
-        code: couponCode.toUpperCase(),
-        isActive: true,
-        validTill: { gte: new Date() },
-      },
-    });
-
-    if (!coupon) {
-      return { success: false, error: "Invalid or expired coupon code." };
-    }
-
-    let newTotal = order.subTotal;
-    if (coupon.discountType === "PERCENTAGE") {
-      newTotal = order.subTotal * (1 - coupon.value / 100);
-    } else {
-      newTotal = Math.max(0, order.subTotal - coupon.value);
-    }
-
-    const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        total: parseFloat(newTotal.toFixed(2)),
-        discountId: coupon.id,
-      },
-    });
-
-    return {
-      success: true,
-      order: updatedOrder,
-      message: "Discount applied successfully!",
-    };
-  } catch (error) {
-    return { success: false, error: "Failed to apply discount." };
-  }
-}
 
 // --- Mock Order Completion ---
 export async function completeOrder(orderId: string, cartId: string) {
@@ -258,7 +241,7 @@ export async function completeOrder(orderId: string, cartId: string) {
       include: { discount: true },
     });
     if (!order) {
-      return { success: false, error: "Order not found." };
+      return { success: false, message: "Order not found." };
     }
 
     console.log(
@@ -267,7 +250,7 @@ export async function completeOrder(orderId: string, cartId: string) {
 
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
-      data: { status: "PROCESSING" },
+      data: { status: "PAID" },
     });
 
     if (order.discount) {
@@ -286,64 +269,67 @@ export async function completeOrder(orderId: string, cartId: string) {
       message: `Order ${order.orderId} completed successfully.`,
     };
   } catch (error) {
-    return { success: false, error: "Mock completion failed." };
+    return { success: false, message: "Mock completion failed." };
   }
 }
 
 
-export async function fetchShopItemsFromDb() {
-  try{
-    const products = await prisma.product.findMany({
-      include : {
-        categories : true
-      }
-    });
-    return { success: true, products };
-  } catch (error) {
-    return { success: false, products : null};
-  }
-}
+export const fetchShopItemsFromDb = unstable_cache(
+  async () => {
+    try {
+      const products = await prisma.product.findMany({
+        include: {
+          categories: true
+        }
+      });
+      return { success: true, products };
+    } catch (error) {
+      return { success: false, products: null };
+    }
+  }, ['products', 'all'], { revalidate: 172800, tags: ['products'] });
 
 
 // Fetch a single product by its ID
-export async function getProductById(productId: string) {
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    include: {
-      categories: true, 
-    },
-  });
+export const getProductById = unstable_cache(
+  async (productId: string) => {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        categories: true,
+      },
+    });
 
-  if (!product) {
-    notFound();
-  }
+    if (!product) {
+      notFound();
+    }
 
-  return product;
-}
+    return product;
+  }, ['products', 'id'], { revalidate: 172800, tags: ['products'] });
 
-export async function getRelatedProducts(productId: string, categoryId?: string) {
-  if (!categoryId) {
-    return [];
-  }
+export const getRelatedProducts = unstable_cache(
+  async (productId: string, categoryId?: string) => {
+    if (!categoryId) {
+      return [];
+    }
 
-  const relatedProducts = await prisma.product.findMany({
-    where: {
-      // Find products that have the same category
-      categories: {
-        some: {
-          id: categoryId,
+    const relatedProducts = await prisma.product.findMany({
+      where: {
+        // Find products that have the same category
+        categories: {
+          some: {
+            id: categoryId,
+          },
+        },
+        // Exclude the current product from the list
+        NOT: {
+          id: productId,
         },
       },
-      // Exclude the current product from the list
-      NOT: {
-        id: productId,
+      include: {
+        categories: true
       },
-    },
-    include: {
-      categories : true
-    },
-    take: 3, // Limit to 3 related products
-  });
+      take: 3, // Limit to 3 related products
+    });
 
-  return relatedProducts;
-}
+    return relatedProducts;
+  }, ['products', 'related'], { revalidate: 172800, tags: ['products'] });
