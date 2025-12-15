@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/generated/prisma/enums";
 
 // --- helper function to hash passwords ---
 export async function hashPassword(password: string): Promise<string> {
@@ -49,6 +49,7 @@ export type SafeUser = {
   email: string;
   name: string | null;
   createdAt: Date;
+  subscriptionPlan: string;
   updatedAt: Date;
   savedArticles: {
     id: string;
@@ -162,4 +163,10 @@ export async function loginUser(email: string, password: string) {
       return true;
     }
   }
+}
+  // --- logout user ---
+export async function logoutUser() {
+    const cookieStore = await cookies();
+    cookieStore.delete("sessionToken");
+    return { success: true };
 }

@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FeaturedStoryCard } from "./featured-story-card";
-import { ArticleWithTags } from "@/app/articles/[category]/page";
+import { Article } from "@/lib/generated/prisma/client";
+import Link from "next/link";
 
 interface FeaturedStoriesProps {
-    articles: ArticleWithTags[];
+    articles: Article[];
 }
 
 export function FeaturedStories({ articles }: FeaturedStoriesProps) {
@@ -20,14 +21,14 @@ export function FeaturedStories({ articles }: FeaturedStoriesProps) {
     };
 
     return (
-        <motion.section className="border-b border-border px-3 sm:px-6 py-8 sm:py-12">
+        <motion.section className="px-3 sm:px-6 py-8 sm:py-12">
             <div className="max-w-6xl mx-auto">
                 <h2 className="text-3xl sm:text-4xl font-bold tracking-widest mb-8 sm:mb-12">
                     FROM OUR WORLD
                 </h2>
 
                 <div className="flex flex-col gap-12 sm:gap-16">
-                    {visibleArticles.map((article) => (
+                    {visibleArticles.map((article, idx) => (
                         <FeaturedStoryCard
                             key={article.id}
                             id={article.id}
@@ -37,11 +38,13 @@ export function FeaturedStories({ articles }: FeaturedStoriesProps) {
                                     ? article.bannerImage
                                     : "/luxury-lifestyle-products.jpg"
                             }
-                            category={article.tags}
+                            category={article.category}
+                            subcategory={article.subcategory}
                             date={article.publicationDate}
                             author={article.writtenBy}
                             slug={article.slug}
                             excerpt={article.body}
+                            idx={idx}
                         />
                     ))}
                 </div>
@@ -54,7 +57,17 @@ export function FeaturedStories({ articles }: FeaturedStoriesProps) {
                         >
                             Load More
                         </button>
-                    </div>
+                    </div> 
+                )}
+                {!hasMore && (
+                    <div className="flex justify-center mt-12 sm:mt-16">
+                    <Link
+                        href={"/articles"}
+                        className="px-8 py-4 bg-black-primary text-white border border-white font-bold tracking-widest hover:bg-white hover:text-black-primary transition-colors duration-300 uppercase text-sm"
+                    >
+                        explore more
+                    </Link>
+                </div>
                 )}
             </div>
         </motion.section>

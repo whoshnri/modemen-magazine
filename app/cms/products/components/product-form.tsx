@@ -1,7 +1,7 @@
 'use client';
 
 import { createProduct, updateProduct, ProductData } from "@/app/actions/cms/products";
-import { Product, Category } from "@prisma/client";
+import { Product, Category } from "@/lib/generated/prisma/client";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useToast } from "@/components/toast/use-toast";
@@ -106,8 +106,8 @@ export function ProductForm({
                             type="button"
                             onClick={() => toggleCategory(cat.id)}
                             className={`px-3 py-1 border text-[10px] font-bold uppercase tracking-widest transition-all ${formData.categoryIds.includes(cat.id)
-                                    ? 'bg-gold-primary text-black border-gold-primary'
-                                    : 'bg-transparent text-muted-foreground border-white/10 hover:border-white'
+                                ? 'bg-gold-primary text-black border-gold-primary'
+                                : 'bg-transparent text-muted-foreground border-white/10 hover:border-white'
                                 }`}
                         >
                             {cat.name}

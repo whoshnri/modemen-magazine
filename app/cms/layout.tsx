@@ -24,7 +24,7 @@ export default async function CMSLayout({
     }
 
     return (
-        <div className="flex min-h-screen bg-[#050505] text-white selection:bg-gold-primary/30">
+        <div className="flex max-h-screen overflow-hidden bg-[#050505] text-white selection:bg-gold-primary/30">
             <CMSSidebar />
             <main className="flex-1 overflow-y-auto h-screen scrollbar-hide">
                 <div className="p-8 sm:p-12 max-w-[1600px] mx-auto">

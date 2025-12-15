@@ -10,7 +10,7 @@ import { Loader2, MapPin, CreditCard, Tag } from "lucide-react";
 import Spinner from "./spinner";
 import { AddAddressModal } from "./Addaddress";
 import { getAddresses } from "@/app/actions/profileOps";
-import { Address } from "@prisma/client";
+import { Address } from "@/lib/generated/prisma/client";
 import Link from "next/link";
 export default function CheckoutClient() {
   const { cart, cartTotal } = useShop();
@@ -56,7 +56,7 @@ export default function CheckoutClient() {
     fetchShippingAddress();
   }, [session?.id]);
 
-  const handleCoupon = async() => {
+  const handleCoupon = async () => {
     if (!couponCode.trim()) {
       toast.error("Please enter a coupon code");
       return;
@@ -67,7 +67,7 @@ export default function CheckoutClient() {
       const result = await getCouponDetails(couponCode);
       if (result.success && result.coupon) {
         let coupon = result.coupon;
-        if(coupon.discountType === "PERCENTAGE") {
+        if (coupon.discountType === "PERCENTAGE") {
           const newTotal = originalTotal - (originalTotal * coupon.value / 100);
           setDiscountedTotal(newTotal);
           setAppliedCoupon(couponCode);
@@ -90,7 +90,7 @@ export default function CheckoutClient() {
       setIsApplyingCoupon(false);
     }
   }
-  
+
   const handleProceedToCheckout = async () => {
     if (!session) {
       toast.error("Please log in to proceed");
@@ -106,7 +106,7 @@ export default function CheckoutClient() {
 
     setIsProcessing(true);
     try {
-      const result = await initiateOrder(selectedShippingAddress?.id!, finalTotal, couponId );
+      const result = await initiateOrder(selectedShippingAddress?.id!, finalTotal, couponId);
 
       if (result.success && result.order) {
         toast.success("Order created successfully!");
@@ -324,7 +324,7 @@ export default function CheckoutClient() {
             >
               {isProcessing ? (
                 <>
-                  <Spinner/>
+                  <Spinner />
                   PROCESSING...
                 </>
               ) : (

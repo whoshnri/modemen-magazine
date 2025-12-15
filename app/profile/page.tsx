@@ -1,143 +1,16 @@
-"use client";
+import { Metadata } from 'next';
+import { Suspense } from 'react';
+import ProfileContent from './ProfileContent';
 
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
-import { useSession } from "@/hooks/use-session";
-import { redirect, useSearchParams } from "next/navigation";
-import { getUserProfilePageData } from "@/app/actions/profileOps";
-import { ProfileClient } from "@/components/ProfileClient";
-import { Suspense, useEffect, useState } from "react";
-import { $Enums, Address, Order } from "@prisma/client";
-
-type useData = {
-  cart: {
-    id: string;
-    createdAt: Date;
-    updatedAt: Date;
-    userId: string;
-  } | null;
-  savedArticles: {
-    id: string;
-    title: string;
-    slug: string;
-    body: string;
-    bannerImage: string | null;
-    featured: boolean;
-    writtenBy: string;
-    publicationDate: Date;
-    createdAt: Date;
-    updatedAt: Date;
-  }[];
-  savedProducts: {
-    name: string;
-    id: string;
-    desc: string | null;
-    price: number;
-    stock: number;
-    image: string;
-  }[];
-  newsletterSubscription: {
-    id: string;
-    createdAt: Date;
-    updatedAt: Date;
-    userId: string | null;
-    email: string;
-    isSubscribed: boolean;
-  } | null;
-  readList: {
-    id: string;
-    title: string;
-    createdAt: Date;
-    updatedAt: Date;
-    releaseDate: Date;
-  }[];
-  addresses: Address[];
-  orders: Order[];
-} & {
-  name: string | null;
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  email: string;
-  password: string;
-  role : $Enums.Role
+export const metadata: Metadata = {
+  title: 'My Profile | Mode Men Magazine',
+  description: 'Manage your profile, orders, and subscriptions.',
 };
 
 export default function ProfilePage() {
-  const params = useSearchParams();
-  const { session } = useSession();
-  const activeTab = params.get("tab") || "orders";
-
   return (
     <Suspense fallback={<div>Loading profile...</div>}>
-      <Body activeTab={activeTab} session={session} />
+      <ProfileContent />
     </Suspense>
-  );
-}
-
-type User = {
-  id: string;
-  email: string;
-  name?: string | null | undefined;
-} | null;
-
-export function Body({
-  activeTab,
-  session,
-}: {
-  activeTab: string;
-  session: User;
-}) {
-  const [user, setUser] = useState<useData | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-
-
-  if (!session) {
-    redirect("/login?redirect=/profile");
-  }
-
-  useEffect(() => {
-    async function fetchData() {
-      if (!session) return;
-      const { data: user, message } = await getUserProfilePageData(session.id);
-      setUser(user);
-      setMessage(message);
-    }
-    fetchData();
-  }, [session]);
-
-  if (!user) {
-    return (
-      <div className="flex flex-col min-h-screen bg-black-primary">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <p className="text-muted-foreground">
-            {message || "Could not load user profile."}
-          </p>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-black-primary flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-1">
-        <div className="border-b border-border bg-black-secondary/30 py-16">
-          <div className="max-w-6xl mx-auto px-6">
-            <h1 className="text-5xl font-bold tracking-widest text-foreground">
-              MY <span className="text-gold-primary">ACCOUNT</span>
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Welcome back, {user.name || "Valued Member"}.
-            </p>
-          </div>
-        </div>
-
-        <ProfileClient user={user} sessionId={session.id} />
-      </main>
-      <Footer />
-    </div>
   );
 }

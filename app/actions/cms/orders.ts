@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from "@/lib/prisma";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus } from "@/lib/generated/prisma/client";
 import { revalidatePath } from "next/cache";
 
 export async function getOrders(page = 1, search = "") {

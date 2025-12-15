@@ -1,23 +1,18 @@
-// lib/prisma.ts (or lib/db.ts)
+import { PrismaClient } from './generated/prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 
-import { PrismaClient } from '@prisma/client'
-
-declare global {
-  // This prevents TypeScript errors in ESM
-  var prisma: PrismaClient | undefined
+const globalForPrisma = global as unknown as {
+    prisma: PrismaClient
 }
 
-// Use globalThis instead of global (works in both Node and Edge)
-const prisma =
-  globalThis.prisma ||
-  new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
-  })
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+})
 
-// Only attach to globalThis in development/hot-reload environments
-if (process.env.NODE_ENV !== 'production') {
-  globalThis.prisma = prisma
-}
+const prisma = globalForPrisma.prisma || new PrismaClient({
+  adapter,
+})
 
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 export default prisma

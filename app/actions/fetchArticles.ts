@@ -2,25 +2,55 @@
 
 import { unstable_cache } from "next/cache";
 import prisma from "@/lib/prisma";
-import { $Enums, Tag, Article } from "@prisma/client";
-import { ArticleWithTags } from "../articles/[category]/page";
+import { $Enums, Article } from "@/lib/generated/prisma/client";
+
+// Helper type for articles until general type is fixed
+
+
+// Helper to normalize strings to Enum keys (e.g. "business-money" -> "BUSINESS_AND_MONEY")
+function normalizeEnumKey(key: string): string {
+  return key.toUpperCase().replace(/-/g, "_");
+}
 
 export const fetchSpecArticles = unstable_cache(
-  async (type: $Enums.Tag, offset: number) => {
+  async (categorySlug: string, offset: number, subcategorySlug?: string) => {
     try {
+      // Normalize Category
+      const normalizedCategory = normalizeEnumKey(categorySlug);
+      // Validate against Enum (optional but good safety)
+      const category = Object.values($Enums.Tag).find(t => t === normalizedCategory);
+
+      if (!category) {
+        console.warn(`Invalid category: ${categorySlug} -> ${normalizedCategory}`);
+        return { message: "Invalid category", data: [] };
+      }
+
+      // Normalize Subcategory if present
+      let subcategory: $Enums.SubTags | undefined;
+      if (subcategorySlug) {
+        const normalizedSub = normalizeEnumKey(subcategorySlug);
+        subcategory = Object.values($Enums.SubTags).find(t => t === normalizedSub);
+        if (!subcategory) {
+          console.warn(`Invalid subcategory: ${subcategorySlug} -> ${normalizedSub}`);
+          // We fetch strictly by category if subcategory is invalid? Or return empty?
+          // Let's filter strictly: if user asks for specific sub and it doesn't exist, return empty.
+          // Actually, user might mistype. Let's return empty to be correct.
+          return { message: "Invalid subcategory", data: [] };
+        }
+      }
+
       const articles = await prisma.article.findMany({
         where: {
-          tags: {
-            some: { name: type },
-          },
-
-        },
-        include: {
-          tags: true,
+          category: category,
+          subcategory: subcategory, // Prisma ignores undefined
         },
         take: 9,
         skip: offset,
+        orderBy: {
+          publicationDate: 'desc'
+        }
       });
+
       if (!articles) {
         return { message: "No articles found", data: [] };
       } else {
@@ -30,7 +60,7 @@ export const fetchSpecArticles = unstable_cache(
       console.error("Error fetching articles:", error);
       return { message: "Error fetching articles", data: [] };
     }
-  }, ['articles', 'spec'], { revalidate: 172800, tags: ['articles'] });
+  }, ['articles', 'spec'], { revalidate: 3600, tags: ['articles'] });
 
 
 export const fetchAllArticles = unstable_cache(
@@ -41,13 +71,9 @@ export const fetchAllArticles = unstable_cache(
     category: $Enums.Tag | "All" = "All",
   ) => {
     try {
-      const whereClause: any = {};
-
       const articles = await prisma.article.findMany({
         where: {
-          tags: category !== "All" ? {
-            some: { name: category },
-          } : undefined,
+          category: category !== "All" ? category : undefined,
           title: search ? {
             contains: search,
           } : undefined,
@@ -56,11 +82,6 @@ export const fetchAllArticles = unstable_cache(
         take: limit,
         orderBy: {
           publicationDate: 'desc',
-        },
-        include: {
-          tags: {
-            select: { name: true },
-          },
         },
       });
 
@@ -76,9 +97,6 @@ export const getArticleBySlug = unstable_cache(
     try {
       const article = await prisma.article.findUnique({
         where: { slug },
-        include: {
-          tags: true,
-        },
       });
       if (!article) {
         return { message: "Article not found", data: null };
@@ -93,19 +111,14 @@ export const getArticleBySlug = unstable_cache(
 
 
 export const getRelatedArticles = unstable_cache(
-  async (category: $Enums.Tag[], offset: number) => {
+  async (category: $Enums.Tag, offset: number) => {
     try {
       const article = await prisma.article.findMany({
         where: {
-          tags: {
-            some: { name: { in: category } }
-          }
+          category: category
         },
         take: 5,
         skip: offset,
-        include: {
-          tags: true,
-        }
       })
       if (!article) {
         return { message: "No related articles found", data: [] };
@@ -118,7 +131,7 @@ export const getRelatedArticles = unstable_cache(
     }
   }, ['articles', 'related'], { revalidate: 172800, tags: ['articles'] });
 
-const tags = ["STYLE", "GROOMING", "CULTURE", "BUSINESS_MONEY", "LIFE", "TECH_INNOVATION"];
+const tags = ["STYLE", "CULTURE", "BUSINESS_AND_MONEY"] as const;
 
 export const fetchHomePageArticles = unstable_cache(
   async () => {
@@ -129,43 +142,59 @@ export const fetchHomePageArticles = unstable_cache(
           featured: true
         },
         take: 5,
-        include: {
-          tags: true
+        orderBy: {
+          publicationDate: 'desc'
         }
       });
 
       const articlesByTagPromises = tags.map(tag =>
         prisma.article.findMany({
           where: {
-            tags: {
-              some: { name: tag as $Enums.Tag }
-            }
+            category: tag
           },
           take: 5,
-          include: {
-            tags: true
-          },
           orderBy: {
             publicationDate: 'desc'
           }
         })
       );
 
-
-
       const results = await Promise.all(articlesByTagPromises);
 
-      const featuredArticlesByTag: { [key: string]: ArticleWithTags[] } = {};
+      const featuredArticlesByTag: { [key: string]: Article[] } = {};
       tags.forEach((tag, index) => {
         featuredArticlesByTag[tag] = results[index];
       });
-
       return {
         message: "Home page articles fetched successfully",
         data: { featuredArticles, featuredArticlesByTag }
       };
     } catch (error) {
       console.error("Error fetching home page articles:", error);
-      return { message: "Error fetching home page articles", data: null };
+      return { message: "Error fetching home page articles", data: null }; // Should handle null better in UI
     }
   }, ['articles', 'home'], { revalidate: 172800, tags: ['articles'] });
+
+
+export async function loadMoreArticles(offset:number) {
+  
+  try{
+    const featuredArticles = await prisma.article.findMany({
+        where: {
+          featured: true
+        },
+        take: 5,
+        orderBy: {
+          publicationDate: 'desc'
+        },
+        skip: offset
+      });
+      return {
+        message: "Home page articles fetched successfully",
+        data: featuredArticles 
+      };
+  }catch(error){
+    console.error("Error fetching home page articles:", error);
+    return { message: "Error fetching home page articles", data: null }; // Should handle null better in UI
+  }
+}

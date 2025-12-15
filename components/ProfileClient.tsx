@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useTransition, useEffect, FormEvent } from "react";
-import { User, Order, Product, Article, Address, NewsletterSubscriber } from "@prisma/client";
+import { User, Order, Product, Article, Address, NewsletterSubscriber, $Enums } from "@/lib/generated/prisma/client";
 import { useToast } from "@/components/toast/use-toast";
 import {
   updateUserProfile,
   changeUserPassword,
   deleteAddress,
 } from "@/app/actions/profileOps";
+import { logoutUser } from "@/app/actions/auth";
 import { updateNewsletterStatus } from "@/app/actions/cms/newsletter";
 import { unsaveArticle, unsaveProduct } from "@/app/actions/saver";
 import Link from "next/link";
@@ -16,12 +17,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AddAddressModal } from "./Addaddress";
 
 // --- TYPE DEFINITION ---
-type ProfileUser = User & {
+export type ProfileUser = User & {
   savedArticles: Article[];
   savedProducts: Product[];
   orders: Order[];
   addresses: Address[];
   newsletterSubscription: NewsletterSubscriber | null;
+  subscriptionPlan: $Enums.SubscriptionPlan;
 };
 
 // --- MAIN CLIENT COMPONENT ---
@@ -46,9 +48,10 @@ export const ProfileClient = ({
 
   const TABS = [
     { id: "overview", label: "Overview" },
-    { id: "orders", label: "Orders" },
-    { id: "saved", label: "Saved Items" },
-    { id: "addresses", label: "Addresses" },
+    // { id: "orders", label: "Orders" }, 
+    { id: "saved-products", label: "Saved Products" }, // Split
+    { id: "saved-articles", label: "Saved Articles" }, // Split
+    // { id: "addresses", label: "Addresses" },
     { id: "settings", label: "Settings" },
   ];
 
@@ -87,7 +90,28 @@ export const ProfileClient = ({
                     <option key={tab.id} value={tab.id}>{tab.label.toUpperCase()}</option>
                   ))}
                 </select>
+                <button
+                  onClick={async () => {
+                    await logoutUser();
+                    window.location.href = "/";
+                  }}
+                  className="w-full mt-4 bg-red-900/20 border border-red-900/50 text-red-500 p-3 font-bold tracking-widest uppercase hover:bg-red-900/40 transition-colors text-xs"
+                >
+                  LOGOUT
+                </button>
               </div>
+            </div>
+            {/* Desktop Logout Button */}
+            <div className="hidden md:block mt-8 pt-8 border-t border-white/10">
+              <button
+                onClick={async () => {
+                  await logoutUser();
+                  window.location.href = "/";
+                }}
+                className="w-full text-left px-4 py-3 text-sm font-bold tracking-widest transition-all duration-300 border-l-2 border-transparent text-red-500 hover:bg-red-900/10 hover:border-red-500 hover:pl-6"
+              >
+                LOGOUT
+              </button>
             </div>
           </aside>
 
@@ -104,23 +128,30 @@ export const ProfileClient = ({
                 {activeTab === "overview" && (
                   <OverviewView user={currentUser} setActiveTab={setActiveTab} />
                 )}
+                {/* 
                 {activeTab === "orders" && (
                   <OrdersView user={currentUser} />
-                )}
-                {activeTab === "saved" && (
-                  <SavedItemsView
+                )} 
+                */}
+                {activeTab === "saved-products" && (
+                  <SavedProductsView
                     products={currentUser.savedProducts}
-                    articles={currentUser.savedArticles}
                     userId={currentUser.id}
                     onRemoveProduct={(id) => {
-                      // Basic state update simulation for now, deep update relies on effect or refetch usually
                       setCurrentUser(prev => ({ ...prev, savedProducts: prev.savedProducts.filter(p => p.id !== id) }))
                     }}
+                  />
+                )}
+                {activeTab === "saved-articles" && (
+                  <SavedArticlesView
+                    articles={currentUser.savedArticles}
+                    userId={currentUser.id}
                     onRemoveArticle={(id) => {
                       setCurrentUser(prev => ({ ...prev, savedArticles: prev.savedArticles.filter(a => a.id !== id) }))
                     }}
                   />
                 )}
+                {/* 
                 {activeTab === "addresses" && (
                   <AddressBookView
                     addresses={addresses}
@@ -131,6 +162,7 @@ export const ProfileClient = ({
                     }
                   />
                 )}
+                */}
                 {activeTab === "settings" && (
                   <SettingsView
                     user={currentUser}
@@ -164,28 +196,30 @@ const OverviewView = ({ user, setActiveTab }: { user: ProfileUser, setActiveTab:
         <p className="text-muted-foreground">Here's a snapshot of your Mode Men account.</p>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {/* Orders Card Commented Out
         <div onClick={() => setActiveTab('orders')} className="bg-black-secondary border border-white/10 p-8 cursor-pointer group hover:border-gold-primary transition-colors">
           <p className="text-gold-primary text-4xl font-bold mb-2 group-hover:scale-110 transition-transform origin-left">{user.orders.length}</p>
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground group-hover:text-white">Total Orders</p>
         </div>
-        <div onClick={() => setActiveTab('saved')} className="bg-black-secondary border border-white/10 p-8 cursor-pointer group hover:border-gold-primary transition-colors">
+        */}
+        <div onClick={() => setActiveTab('saved-products')} className="bg-black-secondary border border-white/10 p-8 cursor-pointer group hover:border-gold-primary transition-colors">
           <p className="text-gold-primary text-4xl font-bold mb-2 group-hover:scale-110 transition-transform origin-left">{user.savedProducts.length}</p>
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground group-hover:text-white">Saved Products</p>
         </div>
-        <div onClick={() => setActiveTab('saved')} className="bg-black-secondary border border-white/10 p-8 cursor-pointer group hover:border-gold-primary transition-colors">
+        <div onClick={() => setActiveTab('saved-articles')} className="bg-black-secondary border border-white/10 p-8 cursor-pointer group hover:border-gold-primary transition-colors">
           <p className="text-gold-primary text-4xl font-bold mb-2 group-hover:scale-110 transition-transform origin-left">{user.savedArticles.length}</p>
           <p className="text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground group-hover:text-white">Saved Articles</p>
         </div>
       </div>
 
+      {/* Recent Order Commented Out 
       {user.orders.length > 0 && (
         <div>
           <div className="flex justify-between items-end mb-6">
             <h3 className="text-xl font-bold tracking-widest text-white">RECENT ORDER</h3>
             <button onClick={() => setActiveTab('orders')} className="text-xs text-gold-primary hover:text-white transition-colors tracking-widest uppercase">View All</button>
           </div>
-          {/* Render just the first order reusing the card styles roughly or simplified */}
           <div className="border border-white/10 p-6 bg-black-secondary/50">
             <div className="flex justify-between items-center mb-4">
               <p className="font-bold tracking-wide">#{user.orders[0].orderId.substring(0, 8).toUpperCase()}</p>
@@ -200,10 +234,12 @@ const OverviewView = ({ user, setActiveTab }: { user: ProfileUser, setActiveTab:
           </div>
         </div>
       )}
+      */}
     </div>
   )
 }
 
+/*
 const OrdersView = ({ user }: { user: ProfileUser }) => {
   return (
     <div className="space-y-8">
@@ -244,6 +280,7 @@ const OrdersView = ({ user }: { user: ProfileUser }) => {
     </div>
   )
 }
+*/
 
 
 // --- SETTINGS VIEW COMPONENT ---
@@ -383,117 +420,17 @@ const SettingsView = ({
   );
 };
 
-// --- COMBINED ACTIVITY & ADDRESSES VIEW ---
-const ActivityView = ({
-  user,
-  addresses,
-  onAddAddressClick,
-  onRemoveAddress,
-}: {
-  user: ProfileUser;
-  addresses: Address[];
-  onAddAddressClick: () => void;
-  onRemoveAddress: (id: string) => void;
-}) => {
-  const [savedProducts, setSavedProducts] = useState(user.savedProducts);
-  const [savedArticles, setSavedArticles] = useState(user.savedArticles);
 
-  useEffect(() => {
-    setSavedProducts(user.savedProducts);
-    setSavedArticles(user.savedArticles);
-  }, [user]);
+// --- SPLIT SAVED ITEMS VIEWS ---
 
-  return (
-    <div className="space-y-12">
-      <div>
-        <h3 className="text-2xl font-bold tracking-widest mb-6">
-          ORDER HISTORY
-        </h3>
-        {user.orders.length === 0 ? (
-          <EmptyState
-            message="You have not placed any orders yet."
-            linkHref="/shop"
-            linkText="Start Shopping"
-          />
-        ) : (
-          <div className="space-y-4">
-            {user.orders.map((order) => (
-              <div
-                key={order.id}
-                className="border border-border p-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4"
-              >
-                <div>
-                  <p className="font-bold tracking-wide">
-                    Order #{order.orderId.substring(0, 8).toUpperCase()}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Date: {new Date(order.createdAt).toLocaleDateString()}
-                  </p>
-                  <p
-                    className={`mt-2 text-xs font-bold uppercase tracking-widest px-2 py-1 inline-block ${order.status === "DELIVERED"
-                      ? "bg-blue-700"
-                      : order.status === "PAID"
-                        ? "bg-green-700"
-                        : order.status === "PENDING"
-                          ? "bg-yellow-600"
-                          : "bg-red-700"
-                      }`}
-                  >
-                    {order.status}
-                  </p>
-                </div>
-                <div className="text-left sm:text-right">
-                  <p className="font-bold text-gold-primary text-lg">
-                    ${order.total.toFixed(2)}
-                  </p>
-                  <Link
-                    href={`/orders/${order.id}`}
-                    className="text-sm mt-1 text-muted-foreground hover:text-gold-primary hover:underline underline-offset-4"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <SavedItemsView
-        products={savedProducts}
-        articles={savedArticles}
-        userId={user.id}
-        onRemoveProduct={(id) =>
-          setSavedProducts((prods) => prods.filter((p) => p.id !== id))
-        }
-        onRemoveArticle={(id) =>
-          setSavedArticles((arts) => arts.filter((a) => a.id !== id))
-        }
-      />
-
-      <AddressBookView
-        addresses={addresses}
-        userId={user.id}
-        onAddAddressClick={onAddAddressClick}
-        onRemoveAddress={onRemoveAddress}
-      />
-    </div>
-  );
-};
-
-// --- CHILD COMPONENTS FOR ACTIVITY VIEW ---
-const SavedItemsView = ({
+const SavedProductsView = ({
   products,
-  articles,
   userId,
   onRemoveProduct,
-  onRemoveArticle,
 }: {
   products: Product[];
-  articles: Article[];
   userId: string;
   onRemoveProduct: (id: string) => void;
-  onRemoveArticle: (id: string) => void;
 }) => {
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -509,6 +446,58 @@ const SavedItemsView = ({
     });
   };
 
+  return (
+    <div>
+      <h3 className="text-2xl font-bold tracking-widest mb-6 border-b border-border pb-4">
+        SAVED PRODUCTS
+      </h3>
+      {products.length === 0 ? (
+        <EmptyState message="You haven't saved any products yet." linkHref="/shop" linkText="BROWSE SHOP" />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {products.map((p) => (
+            <div key={p.id} className="border border-border p-4 flex gap-4">
+              <div className="relative w-20 h-20 shrink-0 bg-black-secondary">
+                <Image
+                  src={p.image}
+                  alt={p.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold leading-tight">{p.name}</h4>
+                <p className="text-gold-primary font-bold mt-1">
+                  ${p.price.toFixed(2)}
+                </p>
+                <button
+                  onClick={() => handleRemoveProduct(p.id)}
+                  disabled={isPending}
+                  className="text-xs text-muted-foreground hover:text-destructive mt-2 uppercase tracking-widest"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const SavedArticlesView = ({
+  articles,
+  userId,
+  onRemoveArticle,
+}: {
+  articles: Article[];
+  userId: string;
+  onRemoveArticle: (id: string) => void;
+}) => {
+  const { showToast } = useToast();
+  const [isPending, startTransition] = useTransition();
+
   const handleRemoveArticle = (id: string) => {
     startTransition(async () => {
       if (await unsaveArticle(id, userId)) {
@@ -521,85 +510,48 @@ const SavedItemsView = ({
   };
 
   return (
-    <div className="space-y-10">
-      <div>
-        <h3 className="text-2xl font-bold tracking-widest mb-6">
-          SAVED PRODUCTS
-        </h3>
-        {products.length === 0 ? (
-          <p className="text-muted-foreground">No products saved.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {products.map((p) => (
-              <div key={p.id} className="border border-border p-4 flex gap-4">
-                <div className="relative w-20 h-20 shrink-0">
-                  <Image
-                    src={p.image}
-                    alt={p.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-bold leading-tight">{p.name}</h4>
-                  <p className="text-gold-primary font-bold mt-1">
-                    ${p.price.toFixed(2)}
-                  </p>
-                  <button
-                    onClick={() => handleRemoveProduct(p.id)}
-                    disabled={isPending}
-                    className="text-xs text-muted-foreground hover:text-destructive mt-2 uppercase tracking-widest"
-                  >
-                    Remove
-                  </button>
-                </div>
+    <div>
+      <h3 className="text-2xl font-bold tracking-widest mb-6 border-b border-border pb-4">
+        SAVED ARTICLES
+      </h3>
+      {articles.length === 0 ? (
+        <EmptyState message="You haven't saved any articles yet." linkHref="/articles" linkText="READ ARTICLES" />
+      ) : (
+        <div className="space-y-4">
+          {articles.map((a) => (
+            <div
+              key={a.id}
+              className="border border-border p-4 flex justify-between items-center"
+            >
+              <div className="flex-1">
+                <h4 className="font-bold">{a.title}</h4>
+                <p className="text-sm text-muted-foreground">
+                  By {a.writtenBy}
+                </p>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-      <div>
-        <h3 className="text-2xl font-bold tracking-widest mb-6">
-          SAVED ARTICLES
-        </h3>
-        {articles.length === 0 ? (
-          <p className="text-muted-foreground">No articles saved.</p>
-        ) : (
-          <div className="space-y-4">
-            {articles.map((a) => (
-              <div
-                key={a.id}
-                className="border border-border p-4 flex justify-between items-center"
-              >
-                <div className="flex-1">
-                  <h4 className="font-bold">{a.title}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    By {a.writtenBy}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4 shrink-0 ml-4">
-                  <Link
-                    href={`/article/${a.slug}`}
-                    className="text-sm font-bold hover:text-gold-primary uppercase tracking-widest"
-                  >
-                    Read
-                  </Link>
-                  <button
-                    onClick={() => handleRemoveArticle(a.id)}
-                    disabled={isPending}
-                    className="text-sm font-bold text-muted-foreground hover:text-destructive uppercase tracking-widest"
-                  >
-                    Remove
-                  </button>
-                </div>
+              <div className="flex items-center gap-4 shrink-0 ml-4">
+                <Link
+                  href={`/articles/${a.slug}`}
+                  className="text-sm font-bold hover:text-gold-primary uppercase tracking-widest"
+                >
+                  Read
+                </Link>
+                <button
+                  onClick={() => handleRemoveArticle(a.id)}
+                  disabled={isPending}
+                  className="text-sm font-bold text-muted-foreground hover:text-destructive uppercase tracking-widest"
+                >
+                  Remove
+                </button>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
+
 
 const AddressBookView = ({
   addresses,
@@ -629,7 +581,7 @@ const AddressBookView = ({
 
   return (
     <div>
-      <h3 className="text-2xl font-bold tracking-widest mb-6">ADDRESS BOOK</h3>
+      <h3 className="text-2xl font-bold tracking-widest mb-6 border-b border-border pb-4">ADDRESS BOOK</h3>
       <div className="space-y-6">
         <button
           onClick={onAddAddressClick}
@@ -641,23 +593,25 @@ const AddressBookView = ({
           <EmptyState message="You have no saved addresses." />
         ) : (
           addresses.map((addr) => (
-            <div key={addr.id} className="border border-border p-6">
-              <p className="font-bold">{addr.street}</p>
+            <div key={addr.id} className="border border-border p-6 bg-black-secondary">
+              <p className="font-bold text-white mb-2">{addr.street}</p>
               <p className="text-muted-foreground">
                 {addr.city}, {addr.state} {addr.zipCode}
               </p>
-              <p className="text-muted-foreground">{addr.country}</p>
-              <div className="mt-4 pt-4 border-t border-border/50 space-x-4">
+              <p className="text-muted-foreground mb-4">{addr.country}</p>
+              <div className="pt-4 border-t border-white/10 space-x-4">
+                {/* 
                 <button
                   disabled
                   className="text-sm text-muted-foreground cursor-not-allowed uppercase tracking-widest"
                 >
                   Edit
                 </button>
+                */}
                 <button
                   onClick={() => handleRemove(addr.id)}
                   disabled={isPending}
-                  className="text-sm text-muted-foreground hover:text-destructive uppercase tracking-widest"
+                  className="text-xs text-muted-foreground hover:text-destructive uppercase tracking-widest"
                 >
                   Delete
                 </button>
@@ -679,7 +633,7 @@ const EmptyState = ({
   linkHref?: string;
   linkText?: string;
 }) => (
-  <div className="text-center py-12 border border-dashed border-border">
+  <div className="text-center py-12 border border-dashed border-border bg-black-secondary/30">
     <p className="text-muted-foreground mb-4">{message}</p>
     {linkHref && linkText && (
       <Link

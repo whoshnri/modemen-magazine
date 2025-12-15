@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useToast } from "@/components/toast/use-toast";
 import { addAddress } from "@/app/actions/profileOps";
-import { Address } from "@prisma/client";
+import { Address } from "@/lib/generated/prisma/client";
 
 interface AddAddressModalProps {
   isOpen: boolean;

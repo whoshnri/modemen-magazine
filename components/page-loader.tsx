@@ -30,7 +30,7 @@ export function PageLoader() {
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        className="fixed inset-0 z-50 bg-black-primary flex flex-col items-center justify-center overflow-hidden"
+        className="fixed inset-0 z-100 bg-black-primary flex flex-col items-center justify-center overflow-hidden"
         initial={{ opacity: 1 }}
         animate={{ opacity: 1 }}
         exit={{

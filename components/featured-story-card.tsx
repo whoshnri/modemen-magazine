@@ -3,16 +3,19 @@
 import Link from "next/link";
 import { useState } from "react";
 import parse from "html-react-parser"
+import { $Enums } from "@/lib/generated/prisma/client";
 
 interface FeaturedStoryCardProps {
     id: string;
     title: string;
-    category: { name: string }[];
+    category: $Enums.Tag;
+    subcategory?: $Enums.SubTags;
     image: string;
     date: Date;
     slug: string;
     author: string;
-    excerpt: string 
+    excerpt: string
+    idx : number
 
 }
 
@@ -20,19 +23,21 @@ export function FeaturedStoryCard({
     id,
     title,
     category,
+    subcategory,
     image,
     date,
     author,
     slug,
     excerpt,
+    idx
 }: FeaturedStoryCardProps) {
     const [isHovered, setIsHovered] = useState(false);
     const parsed = parse(excerpt)
 
     return (
-        <Link href={`/articles/${category[0]?.name.toLocaleLowerCase()}/${slug}`}>
+        <Link href={`/articles/${category.toLowerCase()}/${slug}`}>
             <div
-                className="group flex flex-col md:flex-row gap-6 items-start cursor-pointer"
+                className={`group flex flex-col md:flex-row ${idx % 2 !== 0 ? "md:flex-row-reverse" : ""} gap-6 items-start cursor-pointer`}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
@@ -55,10 +60,10 @@ export function FeaturedStoryCard({
 
                     <div className="mt-auto space-y-1">
                         <div className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-                            {category.map((cat) => cat.name.replace("_", " ")).join(", ")}
+                            {category.replace(/_/g, " ")} {subcategory && ` / ${subcategory.replace(/_/g, " ")}`}
                         </div>
                         <div className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-                            {author} / 
+                            {author} /
                             {/* {date.toLocaleDateString()} */}
                         </div>
                     </div>

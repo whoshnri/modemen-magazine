@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { Gem } from "lucide-react";
+import { SubscriptionPopup } from "./subscription-popup";
 import { HeaderLogo } from "./header-logo";
 import { NavLinks } from "./nav-links";
 import { CartIcon } from "./cart-icon";
@@ -10,6 +12,7 @@ import { MobileNav } from "./mobile-nav";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { NewsletterPopup } from "./newsletter-popup";
+import { SpecialInfoBanner } from "./special-info-banner";
 
 function ExpandingSearch() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -103,13 +106,15 @@ function ExpandingSearch() {
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false)
+  const [isVisible, setIsVisible] = useState(false);
   const [showNewsletter, setShowNewsletter] = useState(false)
+  const [showSubscription, setShowSubscription] = useState(false);
 
 
   useEffect(() => {
 
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 10);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -118,13 +123,14 @@ export function Header() {
   }, []);
 
   return (
-    <>
-      {/* Sticky Top Bar */}
+
       <div className="sticky top-0 z-50 w-full bg-black-primary border-b border-border transition-all duration-300">
-        <div className="px-4 sm:px-6 py-4 flex items-center justify-between gap-4 relative">
+        <SpecialInfoBanner isVisible={isVisible} setIsVisible={setIsVisible} />
+        
+        <div className="px-4 sm:px-6 py-4 flex items-center justify-between gap-4 relative border-b border-border">
 
           {/* Left: Hamburger Menu OR Search & Subscribe */}
-          <div className="flex-1 flex justify-start items-center">
+          <div className="flex-1 flex justify-start items-center gap-2">
             {/* Hamburger: Visible on Mobile OR when Scrolled on Desktop OR when Menu is Open */}
             <div className={`${isScrolled || isOpen ? 'block' : 'md:hidden block'}`}>
               <MobileNav isOpen={isOpen} setIsOpen={setIsOpen} />
@@ -140,6 +146,13 @@ export function Header() {
                 SUBSCRIBE
               </button>
             </div>
+            <button
+              onClick={() => setShowSubscription(true)}
+              className="p-2 text-gold-primary border border-gold-primary hover:bg-gold-primary hover:text-black-primary transition-colors"
+              title="Upgrade to Premium"
+            >
+              <Gem className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Center: Logo */}
@@ -149,17 +162,33 @@ export function Header() {
 
           {/* Right: Account & Cart */}
           <div className="flex-1 flex justify-end items-center gap-4">
-            <CartIcon />
+            {/* <CartIcon /> */}
             <AccountMenu />
           </div>
         </div>
+
+        <AnimatePresence>
+          {!isScrolled && (
+            <motion.div
+              initial={{ height: "auto", opacity: 1 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, overflow: "hidden" }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="hidden md:flex w-full bg-black-primary border-b border-border items-center justify-center"
+            >
+              <div className="px-4 sm:px-6 py-4">
+                <NavLinks />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      <NewsletterPopup isVisible={showNewsletter} setIsVisible={setShowNewsletter} />
+      <SubscriptionPopup
+        isVisible={showSubscription}
+        onClose={() => setShowSubscription(false)}
+        trigger="PAGE"
+      />
       </div>
 
-      {/* Navigation Links (Desktop Only, Scrolls away) */}
-      <div className="hidden md:flex w-full bg-black-primary border-b border-border px-4 sm:px-6 py-4 items-center justify-center">
-        <NavLinks />
-      </div>
-      <NewsletterPopup isVisible={showNewsletter} setIsVisible={setShowNewsletter} />
-    </>
   );
 }

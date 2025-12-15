@@ -8,18 +8,24 @@ export const dynamic = 'force-dynamic';
 export default async function SettingsPage({
     searchParams,
 }: {
-    searchParams?: { page?: string, search?: string };
+    searchParams?: Promise<{ page?: string, search?: string }>;
 }) {
-    const { page: pageParam, search: searchParam } = await searchParams || {};
+    const params = await searchParams; // Wait for promise
+    const pageParam = params?.page;
+    const searchParam = params?.search;
+
     const page = Number(pageParam) || 1;
     const search = searchParam || "";
 
-    const [userData, currentUser] = await Promise.all([
+    const [userResult, currentUser] = await Promise.all([
         getUsers(page, search),
         getActiveUserFromCookie()
     ]);
 
-    const { users, total, pages } = userData;
+    // Handle potential error from server action
+    const users = userResult.success && userResult.data ? userResult.data : [];
+    const meta = userResult.success && userResult.meta ? userResult.meta : { total: 0, pages: 0, page: 1 };
+    const { total, pages } = meta;
 
     return (
         <div className="space-y-12">
@@ -77,7 +83,7 @@ export default async function SettingsPage({
 
                 {/* Pagination */}
                 <div className="flex justify-center gap-2 mt-8">
-                    {Array.from({ length: pages > 10 ? 10 : pages }).map((_, i) => (
+                    {Array.from({ length: pages }).slice(0, 10).map((_, i) => (
                         <Link
                             key={i}
                             href={`/cms/settings?page=${i + 1}`}

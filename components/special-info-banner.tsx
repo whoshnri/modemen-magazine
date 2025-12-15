@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 
-export function SpecialInfoBanner() {
-    const [isVisible, setIsVisible] = useState(false);
+export function SpecialInfoBanner({isVisible, setIsVisible}: {isVisible: boolean, setIsVisible: (isVisible: boolean) => void}) {
 
     useEffect(() => {
         const hiddenTimestamp = localStorage.getItem("specialBannerHidden");
@@ -34,7 +33,7 @@ export function SpecialInfoBanner() {
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="sticky top-0 z-[60] bg-gold-primary text-black-primary w-full overflow-hidden"
+                className="relative z-[60] bg-gold-primary text-black-primary w-full overflow-hidden"
             >
                 <div className="flex items-center justify-between px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium tracking-wide">
                     <div className="flex-1" /> {/* Spacer for centering if needed, or just flex-center */}

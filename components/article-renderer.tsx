@@ -3,13 +3,18 @@
 
 import React, { useMemo, ReactElement, JSX } from "react";
 import parse, { DOMNode, Element, domToReact } from "html-react-parser";
+import { useSession } from "@/hooks/use-session";
 
 interface ArticleRendererProps {
   htmlContent: string;
   ads: ReactElement[];
+  isPremium?: boolean;
+  canAccess?: boolean;
+  onLogin?: () => void;
+  onUpgrade?: () => void;
 }
 
-export function ArticleRenderer({ htmlContent, ads }: ArticleRendererProps) {
+export function ArticleRenderer({ htmlContent, ads, isPremium = false, canAccess = false, onLogin, onUpgrade }: ArticleRendererProps) {
   const content = useMemo(() => {
     if (!htmlContent) return null;
 
@@ -63,15 +68,54 @@ export function ArticleRenderer({ htmlContent, ads }: ArticleRendererProps) {
           adIndex++;
         }
       });
+      if (isPremium && !canAccess) {
+        // Truncate if premium and no access
+        // If we have mixed content (string | JSX), slicing is safe enough for visual truncation
+        return injectedContent.length > 3 ? injectedContent.slice(0, 3) : injectedContent;
+      }
       return injectedContent;
     }
 
+    if (isPremium && !canAccess) {
+      return contentArray.length > 3 ? contentArray.slice(0, 3) : contentArray;
+    }
+
     return contentArray;
-  }, [htmlContent, ads]);
+  }, [htmlContent, ads, isPremium, canAccess]);
+
+  const { session } = useSession();
+  const showGuardrail = isPremium && !canAccess;
+
 
   return (
-    <article className="max-w-4xl mx-auto w-full">
+    <article className="max-w-4xl mx-auto w-full relative">
       {content}
+
+      {showGuardrail && (
+        <div className="absolute inset-x-0 bottom-0 h-[400px] bg-gradient-to-b from-transparent via-gold-primary/10 to-gold-primary/20 flex flex-col items-center justify-end pb-12 z-20 ">
+          <div className="text-center max-w-md p-6 border bg-black-primary border-gold-primary/30 ">
+            <h3 className="text-2xl text-gold-primary mb-4">Premium Content</h3>
+            <p className="text-muted-foreground mb-8">
+              This article is reserved for Modemen members. Sign in or upgrade to continue reading.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {!session && <button
+                onClick={onLogin}
+                className="px-8 py-3 bg-white text-black-primary font-bold uppercase tracking-widest text-xs hover:bg-gray-200 transition-colors"
+              >
+                Sign In
+              </button>}
+              <button
+                onClick={session ? onUpgrade : onLogin}
+                className="px-8 py-3 bg-gold-primary text-black-primary font-bold uppercase tracking-widest text-xs hover:bg-gold-secondary transition-colors"
+              >
+                {session ? 'Upgrade to Premium' : 'Subscribe Now'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </article>
   );
 }
+

@@ -11,12 +11,18 @@ export function CMSSidebar() {
         { label: 'Articles', href: '/cms/articles' },
         { label: 'Products', href: '/cms/products' },
         { label: 'Orders', href: '/cms/orders' },
+        { label: 'Events', href: '/cms/events' },
+        { label: 'Interviews', href: '/cms/interviews' },
+        { label: 'Sponsored', href: '/cms/sponsored' },
+        { label: 'Issues', href: '/cms/issues' },
+        { label: 'Categories', href: '/cms/categories' },
+        { label: 'Users', href: '/cms/users' },
         { label: 'Newsletter', href: '/cms/newsletter' },
         { label: 'Settings', href: '/cms/settings' },
     ];
 
     return (
-        <aside className="w-64 bg-[#050505] border-r border-white/10 flex flex-col h-screen sticky top-0">
+        <aside className="w-64 bg-[#050505] border-r border-white/10 flex flex-col h-screen overflow-y-auto sticky top-0">
             <div className="p-8 border-b border-white/10">
                 <h1 className="text-xl font-bold tracking-[0.2em] text-white">
                     MODE MEN <span className="text-gold-primary">CMS</span>
@@ -35,8 +41,8 @@ export function CMSSidebar() {
                             key={link.href}
                             href={link.href}
                             className={`block px-4 py-3 text-xs font-bold tracking-[0.15em] uppercase transition-all duration-300 border-l-2 ${active
-                                    ? 'border-gold-primary text-white bg-white/5'
-                                    : 'border-transparent text-muted-foreground hover:text-white hover:bg-white/5'
+                                ? 'border-gold-primary text-white bg-white/5'
+                                : 'border-transparent text-muted-foreground hover:text-white hover:bg-white/5'
                                 }`}
                         >
                             {link.label}

@@ -10,6 +10,7 @@ import { useSession } from "@/hooks/use-session";
 import { useToast } from "@/components/toast/use-toast";
 import { LoginDialog } from "@/components/LoginModal";
 import { ArrowLeft } from "lucide-react";
+import ContactOptions from "./contactOptions";
 
 // Define the type for the product, including its categories
 type ProductWithCategories = Products & {
@@ -23,6 +24,7 @@ export const ProductDetailsClient = ({ product }: { product: ProductWithCategori
   
   const [quantity, setQuantity] = useState(1);
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+  const [showContactOptions, setShowContactOptions] = useState(false);
 
   const formattedPrice = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -41,6 +43,10 @@ export const ProductDetailsClient = ({ product }: { product: ProductWithCategori
       showToast(res?.message?.toUpperCase() || "Item(s) added to cart!", "success");
     }
   };
+
+  const handleGetInTouch = () => {
+    setShowContactOptions(true)
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
@@ -80,7 +86,7 @@ export const ProductDetailsClient = ({ product }: { product: ProductWithCategori
           </div>
 
           {/* Quantity Selector */}
-          <div className="flex items-center gap-4 mt-4">
+          {/* <div className="flex items-center gap-4 mt-4">
             <p className="font-bold">QUANTITY:</p>
             <div className="flex border border-border">
               <button
@@ -99,18 +105,28 @@ export const ProductDetailsClient = ({ product }: { product: ProductWithCategori
                 +
               </button>
             </div>
-          </div>
+          </div> */}
           
           {/* Add to Cart Button */}
-          <button
+          {/* <button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
             className="mt-6 w-full bg-gold-primary text-black-primary font-bold py-4 text-sm tracking-widest hover:bg-gold-secondary transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
             {product.stock > 0 ? 'ADD TO CART' : 'OUT OF STOCK'}
+          </button> */}
+
+          <button
+            onClick={handleGetInTouch}
+            disabled={product.stock === 0}
+            className="mt-6 w-full bg-gold-primary text-black-primary font-bold py-4 text-sm tracking-widest hover:bg-gold-secondary transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed uppercase"
+          >
+            GET in touch to order
           </button>
         </div>
       </div>
+
+      <ContactOptions isVisible={showContactOptions} setIsVisible={setShowContactOptions} />
 
       <LoginDialog
         header="Login Required"

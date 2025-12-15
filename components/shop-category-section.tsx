@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Product } from "@prisma/client";
+import { Product } from "@/lib/generated/prisma/client";
 import { motion } from "framer-motion";
 import { fetchProductsByCategory } from "@/app/actions/shopOps";
 import Spinner from "@/components/spinner";
@@ -11,9 +11,10 @@ import { ProductCard } from "./product-card";
 interface ShopCategorySectionProps {
     title: string;
     categoryName: string;
+    limit?: number;
 }
 
-export function ShopCategorySection({ title, categoryName }: ShopCategorySectionProps) {
+export function ShopCategorySection({ title, categoryName, limit = 4 }: ShopCategorySectionProps) {
     const [products, setProducts] = useState<Product[]>([]);
     const [offset, setOffset] = useState(0);
     const [hasMore, setHasMore] = useState(true);
@@ -23,7 +24,7 @@ export function ShopCategorySection({ title, categoryName }: ShopCategorySection
     useEffect(() => {
         const loadInitial = async () => {
             setLoading(true);
-            const res = await fetchProductsByCategory(categoryName, 0, 4);
+            const res = await fetchProductsByCategory(categoryName, 0, limit);
             setProducts(res.data);
             setHasMore(res.hasMore);
             setOffset(res.data.length);
@@ -49,10 +50,12 @@ export function ShopCategorySection({ title, categoryName }: ShopCategorySection
     return (
         <section className="py-16 border-b border-white/10 last:border-0">
             <div className="max-w-7xl mx-auto px-6">
-                <h2 className="text-3xl md:text-4xl font-bold tracking-widest text-white mb-12 uppercase">
-                    <span className="text-gold-primary mr-2">/</span>
-                    {title}
-                </h2>
+                {title && (
+                    <h2 className="text-3xl md:text-4xl font-bold tracking-widest text-white mb-12 uppercase">
+                        <span className="text-gold-primary mr-2">/</span>
+                        {title}
+                    </h2>
+                )}
 
                 {loading ? (
                     <div className="flex justify-center py-20">

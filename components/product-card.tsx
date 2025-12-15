@@ -8,6 +8,7 @@ import { LoginDialog } from "@/components/LoginModal";
 import { useToast } from "@/components/toast/use-toast";
 import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { saveProduct, unsaveProduct } from "@/app/actions/saver"; // add unsave!
 
 type Products = {
@@ -25,6 +26,7 @@ export const ProductCard = ({ item }: { item: Products }) => {
   const [saving, setSaving] = useState(false);
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
   const [justSaved, setJustsaved] = useState(false)
+  const router = useRouter();
 
   // Derive everything from latest cart & session → no stale state!
   const cartItem = cart?.find((c) => c.productId === item.id);
@@ -92,9 +94,11 @@ export const ProductCard = ({ item }: { item: Products }) => {
   };
 
   return (
-    <div className="group relative w-full">
+    <div
+      onClick={() => router.push(`/shop/product/${item.id}`)}
+    className="group relative w-full bg-black-secondary border border-white/10 duration-500 pb-5 hover:border-gold-primary/50">
       {/* Image Container with Digital Issue Border Effect */}
-      <div className="relative aspect-[3/4] bg-black-secondary p-2 border border-white/10 transition-all duration-500 group-hover:border-gold-primary/50 group-hover:-translate-y-1">
+      <div className="relative aspect-[3/4]  p-2 transition-all group-hover:-translate-y-1">
         <div className="relative w-full h-full overflow-hidden bg-[#050505]">
           {item.image ? (
             <Image
@@ -112,7 +116,7 @@ export const ProductCard = ({ item }: { item: Products }) => {
             {/* Save Button */}
             <button
               onClick={(e) => { e.preventDefault(); handleSaveToggle(); }}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 ${isSaved ? "bg-gold-primary text-black" : "bg-white text-black hover:bg-gold-primary"}`}
+              className={`w-10 h-10 flex items-center justify-center transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 ${isSaved ? "bg-gold-primary text-black" : "bg-white text-black hover:bg-gold-primary"}`}
               title={isSaved ? "Remove from Saved" : "Save for Later"}
             >
               <Heart className={`w-5 h-5 ${isSaved ? "fill-black" : ""}`} />
@@ -130,15 +134,15 @@ export const ProductCard = ({ item }: { item: Products }) => {
 
       {/* Product Info */}
       <div className="mt-4 text-center space-y-2">
-        <Link href={`/shop/product/${item.id}`} className="block group/title">
-          <h3 className="text-lg font-bold text-white tracking-wide group-hover/title:text-gold-primary transition-colors line-clamp-1">
+        <Link href={``} className="block">
+          <h3 className="text-lg font-bold text-white tracking-wide transition-colors line-clamp-1">
             {item.name}
           </h3>
         </Link>
-        <p className="text-gold-primary font-mono text-sm tracking-mid">{formattedPrice}</p>
+        {/* <p className="text-gold-primary font-mono text-sm tracking-mid">{formattedPrice}</p> */}
 
         {/* Add to Cart / Controls */}
-        <div className="pt-2">
+        {/* <div className="pt-2">
           {isInCart ? (
             <div className="flex items-center justify-center gap-4">
               <button
@@ -163,7 +167,7 @@ export const ProductCard = ({ item }: { item: Products }) => {
               Add to Cart
             </button>
           )}
-        </div>
+        </div> */}
       </div>
 
       <LoginDialog

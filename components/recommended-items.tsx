@@ -78,11 +78,11 @@ export function RecommendedItems({
               {item.name}
             </h3>
            
-            <div className="flex items-center justify-between pt-4 border-t border-border">
+            {/* <div className="flex items-center justify-between pt-4 border-t border-border">
               <span className="text-lg font-bold text-gold-primary">
                 ${item.price.toFixed(2)}
               </span>
-            </div>
+            </div> */}
           </div>
         </Link>
       ))}

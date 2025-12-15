@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from "@/lib/prisma";
-import { Article, Tag } from "@prisma/client";
+import { Article, Tag, SubTags } from "@/lib/generated/prisma/client"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -13,7 +13,8 @@ export type ArticleData = {
     bannerImage: string;
     featured: boolean;
     writtenBy: string;
-    tags: Tag[];
+    category: Tag;
+    subcategory: SubTags;
 };
 
 export async function getArticles(page = 1, search = "") {
@@ -33,7 +34,6 @@ export async function getArticles(page = 1, search = "") {
             skip,
             take: limit,
             orderBy: { createdAt: 'desc' },
-            include: { tags: true }
         }),
         prisma.article.count({ where })
     ]);
@@ -44,7 +44,6 @@ export async function getArticles(page = 1, search = "") {
 export async function getArticleBySlug(slug: string) {
     return prisma.article.findUnique({
         where: { slug },
-        include: { tags: true }
     });
 }
 
@@ -58,9 +57,8 @@ export async function createArticle(data: ArticleData) {
                 bannerImage: data.bannerImage,
                 featured: data.featured,
                 writtenBy: data.writtenBy,
-                tags: {
-                    create: data.tags.map(tag => ({ name: tag }))
-                }
+                category: data.category,
+                subcategory: data.subcategory,
             }
         });
         revalidatePath('/cms/articles');
@@ -74,9 +72,6 @@ export async function createArticle(data: ArticleData) {
 
 export async function updateArticle(id: string, data: ArticleData) {
     try {
-        // Delete existing tags and create new ones is the simplest way for update
-        await prisma.articleTag.deleteMany({ where: { articleId: id } });
-
         const article = await prisma.article.update({
             where: { id },
             data: {
@@ -86,9 +81,8 @@ export async function updateArticle(id: string, data: ArticleData) {
                 bannerImage: data.bannerImage,
                 featured: data.featured,
                 writtenBy: data.writtenBy,
-                tags: {
-                    create: data.tags.map(tag => ({ name: tag }))
-                }
+                category: data.category,
+                subcategory: data.subcategory,
             }
         });
         revalidatePath('/cms/articles');

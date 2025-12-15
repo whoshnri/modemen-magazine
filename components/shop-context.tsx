@@ -14,7 +14,7 @@ import {
   getCart,
   fetchShopItemsFromDb,
 } from "@/app/actions/storeOperations";
-import { Category, Product } from "@prisma/client";
+import { Category, Product } from "@/lib/generated/prisma/client";
 import { getActiveUserFromCookie } from "@/app/actions/auth";
 
 interface ShopContextType {
@@ -99,15 +99,15 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
     quantity: number,
     userId: string
   ) => {
-    if (!userId) return {error : "failed to add to cart" };
+    if (!userId) return { error: "failed to add to cart" };
     console.log("Adding to cart for user:", userId);
     const result = await addToCart(variantId, quantity, userId);
     if (result.success && result.cart) {
       setCart(result.cart.items);
       setIsCartOpen(true);
-      return {message : "added to cart"}
+      return { message: "added to cart" }
     } else {
-      return {error : "failed to add to cart" }
+      return { error: "failed to add to cart" }
     }
   };
 
@@ -145,7 +145,7 @@ export const ShopProvider = ({ children }: { children: ReactNode }) => {
     (total, item) => total + item.product.price * item.quantity,
     0
   );
-  
+
   useEffect(() => {
     if (cart) {
       const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);

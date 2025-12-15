@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inria_Serif } from "next/font/google";
+import { Cormorant_Garamond, Inria_Serif, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/toast/toast-provider";
 import { SessionProvider } from "@/context/SessionProvider";
@@ -7,11 +7,11 @@ import { getActiveUserFromCookie } from "./actions/auth";
 import { runMainCreate } from "./actions/createArticle";
 import { ShopProvider } from "@/components/shop-context";
 
-import { SpecialInfoBanner } from "@/components/special-info-banner";
 
-const inriaSerif = Inria_Serif({
+
+const inriaSerif =  Inria_Serif({
   subsets: ["latin"],
-  weight: ["300", "400", "700"],
+  weight: ["300"],
   variable: "--font-inria",
 });
 
@@ -43,7 +43,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Google Analytics Scripts */}
+        {/* Google Analytics Scripts */}  
         <script
           async
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
@@ -62,9 +62,8 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${inriaSerif.className} font-mono  antialiased bg-black-primary text-foreground`}
+        className={`${inriaSerif.className} antialiased bg-black-primary text-foreground overflow-hidden overflow-y-auto`}
       >
-        <SpecialInfoBanner />
         <SessionProvider initialSession={session}>
           <ShopProvider>
             <ToastProvider>{children}</ToastProvider>

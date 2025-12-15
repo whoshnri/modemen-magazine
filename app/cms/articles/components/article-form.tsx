@@ -1,17 +1,35 @@
 'use client';
 
 import { createArticle, updateArticle, ArticleData } from "@/app/actions/cms/articles";
-import { Article, Tag } from "@prisma/client";
+// import { Article, Tag } from "@/lib/generated/prisma/client";
+import { Article } from "@/lib/generated/prisma/client";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useToast } from "@/components/toast/use-toast";
 import { RichTextEditor } from "./rich-text-editor";
 
-const ALL_TAGS: Tag[] = [
-    "STYLE", "GROOMING", "CULTURE", "BUSINESS_MONEY", "LIFE", "TECH_INNOVATION"
-];
+// Local Enum definitions to avoid build errors
+const Category = {
+    STYLE: "STYLE",
+    CULTURE: "CULTURE",
+    BUSINESS_AND_MONEY: "BUSINESS_AND_MONEY",
+} as const;
 
-export function ArticleForm({ article }: { article?: Article & { tags: { name: Tag }[] } }) {
+const Subcategory = {
+    FASHION: "FASHION",
+    WATCHES_AND_ACCESSORIES: "WATCHES_AND_ACCESSORIES",
+    GROOMING_AND_WELLNESS: "GROOMING_AND_WELLNESS",
+    ENTERTAINMENT: "ENTERTAINMENT",
+    PEOPLE_AND_PROFILES: "PEOPLE_AND_PROFILES",
+    LEADERSHIP_AND_ENTREPRENEURSHIP: "LEADERSHIP_AND_ENTREPRENEURSHIP",
+    WEALTH: "WEALTH",
+    WORK_AND_CAREERS: "WORK_AND_CAREERS",
+} as const;
+
+type CategoryType = typeof Category[keyof typeof Category];
+type SubcategoryType = typeof Subcategory[keyof typeof Subcategory];
+
+export function ArticleForm({ article }: { article?: Article & { category: string, subcategory: string } }) {
     const router = useRouter();
     const { showToast } = useToast();
     const [isPending, startTransition] = useTransition();
@@ -23,7 +41,8 @@ export function ArticleForm({ article }: { article?: Article & { tags: { name: T
         body: article?.body || "",
         bannerImage: article?.bannerImage || "",
         featured: article?.featured || false,
-        tags: article?.tags.map(t => t.name) || [],
+        category: (article?.category as CategoryType) || "STYLE",
+        subcategory: (article?.subcategory as SubcategoryType) || "FASHION",
         description: "",
     });
 
@@ -37,15 +56,6 @@ export function ArticleForm({ article }: { article?: Article & { tags: { name: T
         if (name === 'featured') {
             setFormData(prev => ({ ...prev, featured: checked }));
         }
-    }
-
-    const toggleTag = (tag: Tag) => {
-        setFormData(prev => {
-            const tags = prev.tags.includes(tag)
-                ? prev.tags.filter(t => t !== tag)
-                : [...prev.tags, tag];
-            return { ...prev, tags };
-        });
     }
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -95,31 +105,55 @@ export function ArticleForm({ article }: { article?: Article & { tags: { name: T
                 </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label className={labelClasses}>Category</label>
+                    <div className="relative">
+                        <select
+                            name="category"
+                            value={formData.category}
+                            onChange={handleChange}
+                            className={`${inputClasses} appearance-none cursor-pointer uppercase`}
+                        >
+                            {Object.values(Category).map((cat) => (
+                                <option key={cat} value={cat} className="bg-black text-white p-2">
+                                    {cat.replace(/_/g, " ")}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white/50">
+                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label className={labelClasses}>Subcategory</label>
+                    <div className="relative">
+                        <select
+                            name="subcategory"
+                            value={formData.subcategory}
+                            onChange={handleChange}
+                            className={`${inputClasses} appearance-none cursor-pointer uppercase`}
+                        >
+                            {Object.values(Subcategory).map((sub) => (
+                                <option key={sub} value={sub} className="bg-black text-white p-2">
+                                    {sub.replace(/_/g, " ")}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white/50">
+                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div>
                 <label className={labelClasses}>Body Content (Rich Text)</label>
                 <RichTextEditor
                     content={formData.body}
                     onChange={(html) => setFormData(prev => ({ ...prev, body: html }))}
                 />
-            </div>
-
-            <div>
-                <label className={labelClasses}>Tags</label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                    {ALL_TAGS.map(tag => (
-                        <button
-                            key={tag}
-                            type="button"
-                            onClick={() => toggleTag(tag)}
-                            className={`px-3 py-1 border text-[10px] font-bold uppercase tracking-widest transition-all ${formData.tags.includes(tag)
-                                ? 'bg-gold-primary text-black border-gold-primary'
-                                : 'bg-transparent text-muted-foreground border-white/10 hover:border-white'
-                                }`}
-                        >
-                            {tag}
-                        </button>
-                    ))}
-                </div>
             </div>
 
             <div className="flex items-center gap-3">

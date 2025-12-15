@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { $Enums } from "@/lib/generated/prisma/client";
 
 interface ArticleCardProps {
   id: string;
   title: string;
-  category: { name: string }[];
+  category: $Enums.Tag;
+  subcategory?: $Enums.SubTags;
   image: string;
   date: Date;
   slug: string;
@@ -18,6 +20,7 @@ export function ArticleCard({
   id,
   title,
   category,
+  subcategory,
   image,
   date,
   author,
@@ -27,7 +30,7 @@ export function ArticleCard({
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <Link href={`/articles/${category[0]?.name.toLocaleLowerCase()}/${slug}`}>
+    <Link href={`/articles/${category.toLowerCase()}/${slug}`}>
       <div
         className="border border-border transition-all duration-300 cursor-pointer"
         style={{
@@ -52,13 +55,12 @@ export function ArticleCard({
         <div className="p-6">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold tracking-widest text-gold-primary uppercase">
-              {category.map((cat) => cat.name.replace("_", " ")).join(", ")}
+              {category.replace(/_/g, " ")} {subcategory && ` / ${subcategory.replace(/_/g, " ")}`}
             </span>
           </div>
           <h3
-            className={`font-bold tracking-wide mb-3 leading-tight ${
-              featured ? "text-2xl" : "text-lg"
-            }`}
+            className={`font-bold tracking-wide mb-3 leading-tight ${featured ? "text-2xl" : "text-lg"
+              }`}
           >
             {title}
           </h3>

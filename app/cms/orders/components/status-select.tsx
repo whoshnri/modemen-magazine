@@ -1,7 +1,18 @@
 'use client';
 
 import { updateOrderStatus } from "@/app/actions/cms/orders";
-import { OrderStatus } from "@prisma/client";
+// import { OrderStatus } from "@/lib/generated/prisma/client";
+
+const OrderStatus = {
+    PAID: "PAID",
+    PENDING: "PENDING",
+    SHIPPED: "SHIPPED",
+    DELIVERED: "DELIVERED",
+    CANCELED: "CANCELED",
+} as const;
+
+type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
+
 import { useTransition } from "react";
 import { useToast } from "@/components/toast/use-toast";
 

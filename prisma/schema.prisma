@@ -1,30 +1,32 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql" // postgresql or sqlite
-  url = env("DATABASE_URL")
+  provider = "postgresql"
 }
+
+
 
 
 enum Tag {
   STYLE
-  GROOMING
   CULTURE
-  BUSINESS_MONEY
-  LIFE
-  TECH_INNOVATION
+  BUSINESS_AND_MONEY
+}
+enum SubTags {
+  FASHION
+  WATCHES_AND_ACCESSORIES
+  GROOMING_AND_WELLNESS
+  ENTERTAINMENT
+  PEOPLE_AND_PROFILES
+  LEADERSHIP_AND_ENTREPRENEURSHIP
+  WEALTH
+  WORK_AND_CAREERS
 }
 
-model ArticleTag {
-  id        String  @id @default(cuid())
-  name      Tag
-  articleId String
-  article   Article @relation("ArticleTags", fields: [articleId], references: [id], onDelete: Cascade)
 
-  @@index([articleId])
-}
 
 enum Role {
   USER
@@ -37,6 +39,7 @@ model User {
   name          String?
   password      String
   role          Role      @default(USER)
+  subscriptionPlan SubscriptionPlan @default(FREE)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   savedArticles Article[] @relation("SavedArticles")
@@ -66,11 +69,13 @@ model Article {
   body            String
   bannerImage     String?
   featured        Boolean      @default(true)
+  isPremium       Boolean      @default(false)
   writtenBy       String
   publicationDate DateTime     @default(now())
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
-  tags            ArticleTag[] @relation("ArticleTags")
+  category        Tag
+  subcategory     SubTags
   savedBy         User[]  @relation("SavedArticles")
 }
 
@@ -100,15 +105,87 @@ model Product {
   cartItems  CartItem[]
   orderItems OrderItem[]
   savedBy     User[]    @relation("SavedProducts")
+  isAffiliate Boolean   @default(false)
+  affiliateLink String?
+  affiliateVendor String?
 }
 
 model Issues {
   id        String     @id @default(cuid())
   title     String 
   releaseDate DateTime
+  coverImage String?
+  description String?
+  teaserText  String?
+  viewLink  String
+  buyLink String?
   savedBy  User[] @relation("SavedIssues")
   createdAt   DateTime @default(now())
   updatedAt       DateTime     @updatedAt
+}
+
+enum SubscriptionPlan {
+  FREE
+  PREMIUM
+  VIP
+}
+
+model Sponsored {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  slug        String   @unique
+  client      String
+  image       String?
+  link        String?
+  type        SponsoredType @default(PERSON)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum SponsoredType {
+  PERSON
+  ITEM
+  EVENT
+}
+
+enum EventType {
+  FREE
+  PAID
+  INVITE_ONLY
+}
+
+model Interview {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  content     String
+  videoUrl    String?
+  coverImage  String?
+  featured    Boolean  @default(false)
+  tagline     String?
+  people      String?  // Name of the person interviewed
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String
+  date        DateTime
+  location    String?
+  imageUrl    String?
+  ticketLink  String?
+  type        EventType @default(FREE)
+  price       Float?
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Cart {
@@ -210,3 +287,4 @@ model Discount {
   updatedAt    DateTime     @updatedAt
   orders       Order[]
 }
+
