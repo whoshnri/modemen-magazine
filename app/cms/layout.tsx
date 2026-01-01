@@ -1,4 +1,5 @@
 import { CMSSidebar } from "./components/cms-sidebar";
+import { CMSMobileHeader } from "./components/cms-mobile-header";
 import { Metadata } from 'next';
 import { getActiveUserFromCookie } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
@@ -24,10 +25,11 @@ export default async function CMSLayout({
     }
 
     return (
-        <div className="flex max-h-screen overflow-hidden bg-[#050505] text-white selection:bg-gold-primary/30">
+        <div className="flex flex-col lg:flex-row max-h-screen overflow-hidden bg-[#050505] text-white selection:bg-gold-primary/30">
+            <CMSMobileHeader />
             <CMSSidebar />
             <main className="flex-1 overflow-y-auto h-screen scrollbar-hide">
-                <div className="p-8 sm:p-12 max-w-[1600px] mx-auto">
+                <div className="p-4 sm:p-6 lg:p-8 xl:p-12 max-w-[1600px] mx-auto">
                     {children}
                 </div>
             </main>

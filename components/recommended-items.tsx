@@ -45,11 +45,11 @@ export function RecommendedItems({
 
   return (
     <div
-      className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${columns} gap-8`}
+      className={`grid grid-cols-2 lg:grid-cols-${columns} gap-3`}
     >
       {items.map((item) => (
         <Link
-        href={`/shop/product/${item.id}`}
+          href={`/shop/product/${item.id}`}
           key={item.id}
           className="border border-border transition-all duration-300"
           onMouseEnter={() => setHoveredId(item.id)}
@@ -58,31 +58,28 @@ export function RecommendedItems({
             borderColor: hoveredId === item.id ? "#d4af37" : "#2a2a2a",
           }}
         >
-          <div className="h-78 overflow-hidden bg-black-secondary">
+          <div className="overflow-hidden bg-black-secondary">
             <img
               src={item.image || "/placeholder.svg"}
               alt={item.name}
-              className="w-full h-full object-cover transition-transform duration-500"
+              className="w-full h-full object-cover aspect-square transition-transform duration-500"
               style={{
                 transform: hoveredId === item.id ? "scale(1.08)" : "scale(1)",
               }}
             />
           </div>
-          <div className="p-6">
-            {item.categories && (
-              <p className="text-xs font-bold tracking-widest text-gold-primary mb-2 uppercase">
-                {item.categories.map((cat) => cat.name).join(", ")}
+          <div className="p-6 text-center">
+            {item.designer && (
+              <p className="text-[10px] text-gold-primary uppercase tracking-[0.2em] font-medium opacity-80 mb-1">
+                {item.designer}
               </p>
             )}
-            <h3 className="text-lg font-bold tracking-wide mb-2">
+            <h3 className="text-sm font-bold tracking-wide mb-2 line-clamp-1">
               {item.name}
             </h3>
-           
-            {/* <div className="flex items-center justify-between pt-4 border-t border-border">
-              <span className="text-lg font-bold text-gold-primary">
-                ${item.price.toFixed(2)}
-              </span>
-            </div> */}
+            <p className="text-gold-secondary font-mono text-sm tracking-widest font-bold">
+              ${item.price.toFixed(2)}
+            </p>
           </div>
         </Link>
       ))}

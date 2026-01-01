@@ -22,8 +22,10 @@ import { Products, useShop } from "@/components/shop-context";
 import Spinner from "@/components/spinner";
 import ModeMenAnniversary from "@/components/mode-men-anniversary";
 import { CurrentIssueSpotlight } from "@/components/current-issue-spotlight";
-import { FeaturedInterviews } from "@/components/featured-interviews";
-import FeaturedEvents from "@/components/featured-events";
+import { useSession } from "@/hooks/use-session";
+import { $Enums, Ad } from "@/lib/generated/prisma/client";
+// import { FeaturedInterviews } from "@/components/featured-interviews";
+// import FeaturedEvents from "@/components/featured-events";
 
 const ArticleCardSkeleton = () => (
   <div className="bg-black-secondary/30 animate-pulse overflow-hidden">
@@ -65,6 +67,20 @@ export default function HomePage() {
   const [products, setProducts] = useState<Products[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [ourWorldOffset, setOurWorldOffset] = useState(5)
+
+  const { session } = useSession();
+  const [ads, setAds] = useState<Ad[]>([]);
+
+  useEffect(() => {
+    const fetchAds = async () => {
+      const { getRandomAdByType } = await import("@/app/actions/adOps");
+      const fetchedAds = await getRandomAdByType([] as $Enums.Tag[], 5);
+      setAds(fetchedAds);
+    };
+    fetchAds();
+  }, []);
+
+  const isPremium = session?.subscriptionPlan === 'PREMIUM' || session?.subscriptionPlan === 'VIP';
 
   const allCategories = [
     "STYLE",
@@ -168,7 +184,7 @@ export default function HomePage() {
                 </a>
               </div>
               {/* Background decoration */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(circle_at_center,_#3B2F2F_0%,_transparent_60%)] opacity-20 pointer-events-none"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(circle_at_center,#3B2F2F_0%,transparent_60%)] opacity-20 pointer-events-none"></div>
             </motion.section>
           )}
 
@@ -182,21 +198,18 @@ export default function HomePage() {
             ) : (
               featuredArticles.length > 0 && (
                 <div className="flex flex-col gap-12 sm:gap-16">
-                <FeaturedStories articles={featuredArticles.slice(1)} />
+                  <FeaturedStories articles={featuredArticles.slice(1)} />
                 </div>
               )
             )}
           </div>
 
-          {/* Events */}
-          <FeaturedEvents />
+          {/* <FeaturedEvents /> */}
 
           {/* Anniversary Component */}
           <ModeMenAnniversary />
 
-          {/* Featured Interviews (New) */}
-          <FeaturedInterviews />
-
+          {/* <FeaturedInterviews /> */}
           {/* Shop Preview with Ads */}
           <div className="py-16 bg-black-primary">
             <div className="container-responsive mb-12">
@@ -206,33 +219,38 @@ export default function HomePage() {
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 <div className="lg:col-span-1">
-                  <VerticalAd
-                    title="The Gold Standard"
-                    description="Timeless pieces for the modern collector."
-                    image="/images/watch-ad.jpg"
-                    width="w-full"
-                    backgroundColor="#0a0a0a"
-                    textColor="#fff"
-                  />
+                  {!isPremium && (
+                    <VerticalAd
+                      title={ads[0]?.title || "The Gold Standard"}
+                      description={ads[0]?.title ? "" : "Timeless pieces for the modern collector."}
+                      image={ads[0]?.image || "/images/watch-ad.jpg"}
+                      width="w-full"
+                      backgroundColor="#0a0a0a"
+                      textColor="#fff"
+                      link={ads[0]?.link}
+                    />
+                  )}
                 </div>
-                <div className="lg:col-span-3">
-                  {shopItems ? <RecommendedItems items={shopItems.slice(0, 3)} columns={3} /> : <div className="text-white/50 text-center py-12"><Spinner/></div>}
+                <div className={isPremium ? "lg:col-span-4" : "lg:col-span-3"}>
+                  {shopItems ? <RecommendedItems items={shopItems.slice(0, isPremium ? 12 : 10)} columns={isPremium ? 4 : 3} /> : <div className="text-white/50 text-center py-12"><Spinner /></div>}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Horizontal Ad */}
-          <section className="py-8 border-y border-border">
-            <div className="container-responsive">
-              <HorizontalAd
-                title="Legacy of Taste"
-                description=""
-                image="/images/horizontal-ad-placeholder.jpg"
-                link="/sponsored"
-              />
-            </div>
-          </section>
+          {!isPremium && (
+            <section className="py-8 border-y border-border">
+              <div className="container-responsive">
+                <HorizontalAd
+                  title={ads[1]?.title || "Legacy of Taste"}
+                  description=""
+                  image={ads[1]?.image || "/images/horizontal-ad-placeholder.jpg"}
+                  link={ads[1]?.link || "/sponsored"}
+                />
+              </div>
+            </section>
+          )}
         </main>
 
         <Footer />

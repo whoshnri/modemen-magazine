@@ -42,6 +42,10 @@ type CartItemWithProduct = {
     price: number;
     stock: number;
     image: string;
+    designer: string | null;
+    size: string | null;
+    color: string | null;
+    itemType: string | null;
   };
 } & {
   id: string;
@@ -62,6 +66,11 @@ export type Products = {
   price: number;
   stock: number;
   image: string;
+  designer: string | null;
+  size: string | null;
+  color: string | null;
+  desc: string | null;
+  itemType: string | null;
 };
 
 export const ShopProvider = ({ children }: { children: ReactNode }) => {

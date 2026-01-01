@@ -274,62 +274,62 @@ export async function completeOrder(orderId: string, cartId: string) {
 }
 
 
-export const fetchShopItemsFromDb = unstable_cache(
-  async () => {
-    try {
-      const products = await prisma.product.findMany({
-        include: {
-          categories: true
-        }
-      });
-      return { success: true, products };
-    } catch (error) {
-      return { success: false, products: null };
-    }
-  }, ['products', 'all'], { revalidate: 172800, tags: ['products'] });
+export async function fetchShopItemsFromDb() {
+  try {
+    const products = await prisma.product.findMany({
+      include: {
+        categories: true
+      }
+    });
+    return { success: true, products };
+  } catch (error) {
+    return { success: false, products: null };
+  }
+}
 
 
 // Fetch a single product by its ID
-export const getProductById = unstable_cache(
-  async (productId: string) => {
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
-      include: {
-        categories: true,
-      },
-    });
+export async function getProductById(productId: string) {
+  console.log(`[DB DEBUG] Querying Prisma findUnique for ID: "${productId}"`);
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: {
+      categories: true,
+    },
+  });
 
-    if (!product) {
-      notFound();
-    }
+  if (!product) {
+    console.warn(`[DB DEBUG] Product not found in database for ID: "${productId}"`);
+    return null;
+  }
 
-    return product;
-  }, ['products', 'id'], { revalidate: 172800, tags: ['products'] });
+  console.log(`[DB DEBUG] Product found: "${product.name}"`);
+  return product;
+}
 
-export const getRelatedProducts = unstable_cache(
-  async (productId: string, categoryId?: string) => {
-    if (!categoryId) {
-      return [];
-    }
+export async function getRelatedProducts(productId: string, categoryId?: string) {
+  if (!categoryId) {
+    return [];
+  }
 
-    const relatedProducts = await prisma.product.findMany({
-      where: {
-        // Find products that have the same category
-        categories: {
-          some: {
-            id: categoryId,
-          },
-        },
-        // Exclude the current product from the list
-        NOT: {
-          id: productId,
+  const relatedProducts = await prisma.product.findMany({
+    where: {
+      // Find products that have the same category
+      categories: {
+        some: {
+          id: categoryId,
         },
       },
-      include: {
-        categories: true
+      // Exclude the current product from the list
+      NOT: {
+        id: productId,
       },
-      take: 3, // Limit to 3 related products
-    });
+    },
+    include: {
+      categories: true
+    },
+    take: 3, // Limit to 3 related products
+  });
 
-    return relatedProducts;
-  }, ['products', 'related'], { revalidate: 172800, tags: ['products'] });
+  return relatedProducts;
+}

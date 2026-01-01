@@ -79,6 +79,20 @@ export const ProfileClient = ({
                   ))}
                 </nav>
               </div>
+
+              {/* Desktop Logout Button - Moved inside sticky */}
+              <div className="hidden md:block pt-8 border-t border-white/10">
+                <button
+                  onClick={async () => {
+                    await logoutUser();
+                    window.location.href = "/";
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm font-bold tracking-widest transition-all duration-300 border-l-2 border-transparent text-red-500 hover:bg-red-900/10 hover:border-red-500 hover:pl-6"
+                >
+                  LOGOUT
+                </button>
+              </div>
+
               {/* Mobile Nav */}
               <div className="md:hidden">
                 <select
@@ -100,18 +114,6 @@ export const ProfileClient = ({
                   LOGOUT
                 </button>
               </div>
-            </div>
-            {/* Desktop Logout Button */}
-            <div className="hidden md:block mt-8 pt-8 border-t border-white/10">
-              <button
-                onClick={async () => {
-                  await logoutUser();
-                  window.location.href = "/";
-                }}
-                className="w-full text-left px-4 py-3 text-sm font-bold tracking-widest transition-all duration-300 border-l-2 border-transparent text-red-500 hover:bg-red-900/10 hover:border-red-500 hover:pl-6"
-              >
-                LOGOUT
-              </button>
             </div>
           </aside>
 

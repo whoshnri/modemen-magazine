@@ -8,6 +8,9 @@ CREATE TYPE "SubTags" AS ENUM ('FASHION', 'WATCHES_AND_ACCESSORIES', 'GROOMING_A
 CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
 
 -- CreateEnum
+CREATE TYPE "ProductType" AS ENUM ('BAGS', 'BELTS', 'BLAZERS', 'CAPS', 'JEANS', 'JOGGERS', 'PERFUMES', 'SUNGLASSES', 'FRAMES', 'SHIRTS', 'POLOS', 'SHOES', 'SHORTS', 'SWEATERS', 'TSHIRTS', 'WALLETS', 'OTHER');
+
+-- CreateEnum
 CREATE TYPE "SubscriptionPlan" AS ENUM ('FREE', 'PREMIUM', 'VIP');
 
 -- CreateEnum
@@ -92,6 +95,10 @@ CREATE TABLE "Product" (
     "name" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "desc" TEXT,
+    "size" TEXT,
+    "designer" TEXT,
+    "color" TEXT,
+    "itemType" "ProductType",
     "stock" INTEGER NOT NULL DEFAULT 0,
     "image" TEXT NOT NULL,
     "isAffiliate" BOOLEAN NOT NULL DEFAULT false,
@@ -106,6 +113,11 @@ CREATE TABLE "Issues" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "releaseDate" TIMESTAMP(3) NOT NULL,
+    "coverImage" TEXT,
+    "description" TEXT,
+    "teaserText" TEXT,
+    "viewLink" TEXT NOT NULL,
+    "buyLink" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -117,6 +129,8 @@ CREATE TABLE "Sponsored" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "client" TEXT NOT NULL,
     "image" TEXT,
     "link" TEXT,
     "type" "SponsoredType" NOT NULL DEFAULT 'PERSON',
@@ -294,6 +308,9 @@ CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Sponsored_slug_key" ON "Sponsored"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Interview_slug_key" ON "Interview"("slug");

@@ -10,9 +10,10 @@ export function CMSSidebar() {
         { label: 'Overview', href: '/cms' },
         { label: 'Articles', href: '/cms/articles' },
         { label: 'Products', href: '/cms/products' },
-        { label: 'Orders', href: '/cms/orders' },
-        { label: 'Events', href: '/cms/events' },
-        { label: 'Interviews', href: '/cms/interviews' },
+        // { label: 'Orders', href: '/cms/orders' },
+        { label: 'Ads', href: '/cms/ads' },
+        // { label: 'Events', href: '/cms/events' },
+        // { label: 'Interviews', href: '/cms/interviews' },
         { label: 'Sponsored', href: '/cms/sponsored' },
         { label: 'Issues', href: '/cms/issues' },
         { label: 'Categories', href: '/cms/categories' },
@@ -22,7 +23,7 @@ export function CMSSidebar() {
     ];
 
     return (
-        <aside className="w-64 bg-[#050505] border-r border-white/10 flex flex-col h-screen overflow-y-auto sticky top-0">
+        <aside className="hidden lg:flex w-64 bg-[#050505] border-r border-white/10 flex-col h-screen overflow-y-auto sticky top-0">
             <div className="p-8 border-b border-white/10">
                 <h1 className="text-xl font-bold tracking-[0.2em] text-white">
                     MODE MEN <span className="text-gold-primary">CMS</span>

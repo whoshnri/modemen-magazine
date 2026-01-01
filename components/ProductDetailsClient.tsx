@@ -21,7 +21,7 @@ export const ProductDetailsClient = ({ product }: { product: ProductWithCategori
   const { addToCart } = useShop();
   const { session } = useSession();
   const { showToast } = useToast();
-  
+
   const [quantity, setQuantity] = useState(1);
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
   const [showContactOptions, setShowContactOptions] = useState(false);
@@ -50,7 +50,7 @@ export const ProductDetailsClient = ({ product }: { product: ProductWithCategori
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
-         <Link href={`/shop#${product.id}`} className="flex items-center gap-1 text-lg text-gold-secondary hover:underline underline-offset-2 p-3"><ArrowLeft/>Back to Shop</Link>
+      <Link href={`/shop#${product.id}`} className="flex items-center gap-1 text-lg text-gold-secondary hover:underline underline-offset-2 p-3"><ArrowLeft />Back to Shop</Link>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
         {/* Left Column: Product Image */}
@@ -75,38 +75,46 @@ export const ProductDetailsClient = ({ product }: { product: ProductWithCategori
               </span>
             ))}
           </div>
-          <h1 className="text-4xl font-bold tracking-wider text-foreground">{product.name}</h1>
-          <p className="text-2xl font-bold text-gold-primary tracking-widest">{formattedPrice}</p>
-          
-          <div className="border-y border-border py-6 text-muted-foreground leading-relaxed">
-            {/* You can add a description field to your schema and display it here */}
-            <p>
-              This is a placeholder for the product description. Enhance your Prisma schema with a 'description' field to provide compelling details about this exclusive item.
-            </p>
+          <div className="space-y-1">
+            {product.designer && (
+              <p className="text-gold-primary text-sm font-bold tracking-[0.3em] uppercase">
+                {product.designer}
+              </p>
+            )}
+            <h1 className="text-4xl font-bold tracking-wider text-foreground">{product.name}</h1>
           </div>
 
-          {/* Quantity Selector */}
-          {/* <div className="flex items-center gap-4 mt-4">
-            <p className="font-bold">QUANTITY:</p>
-            <div className="flex border border-border">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-4 py-2 text-lg font-bold hover:bg-black-secondary transition-colors"
-              >
-                −
-              </button>
-              <span className="px-6 py-2 text-md font-bold border-l border-r border-border">
-                {quantity}
-              </span>
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="px-4 py-2 text-lg font-bold hover:bg-black-secondary transition-colors"
-              >
-                +
-              </button>
+          <p className="text-3xl font-bold text-white tracking-widest">{formattedPrice}</p>
+
+          <div className="border-y border-white/10 py-6 space-y-4">
+            {product.desc && (
+              <p className="text-muted-foreground leading-relaxed italic">
+                {product.desc}
+              </p>
+            )}
+
+            <div className="grid grid-cols-2 gap-4 pt-4 text-xs tracking-widest uppercase">
+              {product.size && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-white/40">Size</span>
+                  <span className="text-white font-bold">{product.size}</span>
+                </div>
+              )}
+              {product.color && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-white/40">Color</span>
+                  <span className="text-white font-bold">{product.color}</span>
+                </div>
+              )}
+              <div className="flex flex-col gap-1">
+                <span className="text-white/40">Availability</span>
+                <span className={`${product.stock > 0 ? 'text-green-500' : 'text-red-500'} font-bold`}>
+                  {product.stock > 0 ? `${product.stock} IN STOCK` : 'OUT OF STOCK'}
+                </span>
+              </div>
             </div>
-          </div> */}
-          
+          </div>
+
           {/* Add to Cart Button */}
           {/* <button
             onClick={handleAddToCart}

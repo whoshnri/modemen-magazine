@@ -119,7 +119,7 @@ export async function getSubscribers(page = 1, search = "") {
             skip,
             take: limit,
             orderBy: { createdAt: 'desc' },
-            include: { user: { select: { name: true } } }
+            include: { user: { select: { name: true, subscriptionPlan: true } } }
         }),
         prisma.newsletterSubscriber.count({ where })
     ]);

@@ -66,7 +66,6 @@ export default function AnniversaryContent() {
 
                     <div className="max-w-6xl mx-auto text-center space-y-16 relative z-10">
                         <motion.div variants={fadeInUp}>
-                            <span className="text-gold-primary font-mono text-sm tracking-widest mb-4 block">8.1</span>
                             <h2 className="text-3xl sm:text-4xl font-bold tracking-widest text-white mb-2">COUNTDOWN TO APRIL 2026</h2>
                             <p className="text-muted-foreground">The era of excellence continues.</p>
                         </motion.div>
@@ -127,7 +126,6 @@ export default function AnniversaryContent() {
                     <div className="max-w-7xl mx-auto space-y-20">
                         <div className="flex flex-col md:flex-row justify-between items-start gap-8 border-b border-border pb-8">
                             <motion.div variants={fadeInUp}>
-                                <span className="text-gold-primary font-mono text-sm tracking-widest mb-2 block">8.3</span>
                                 <h2 className="text-5xl sm:text-6xl font-bold tracking-wide text-white">THE ARCHIVE</h2>
                             </motion.div>
                             <motion.button
@@ -181,7 +179,6 @@ export default function AnniversaryContent() {
                 >
                     <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-16 relative z-10">
                         <motion.div variants={fadeInUp} className="flex-1 space-y-8">
-                            <span className="font-mono text-sm tracking-widest border border-black-primary px-3 py-1 inline-block">8.5</span>
                             <h2 className="text-5xl sm:text-7xl font-bold tracking-tighter leading-none">
                                 THE <br /> PLATINUM <br /> ISSUE
                             </h2>
@@ -218,7 +215,6 @@ export default function AnniversaryContent() {
                 >
                     <div className="max-w-6xl mx-auto text-center space-y-16">
                         <motion.div variants={fadeInUp}>
-                            <span className="text-gold-primary font-mono text-sm tracking-widest mb-2 block">8.4</span>
                             <h2 className="text-3xl font-bold tracking-widest text-white mb-8">PARTNERS & SPONSORS</h2>
                             <p className="text-muted-foreground max-w-2xl mx-auto">
                                 Powered by those who define the future.
@@ -253,7 +249,6 @@ export default function AnniversaryContent() {
                 >
                     <div className="max-w-6xl mx-auto space-y-24">
                         <motion.div variants={fadeInUp} className="text-center">
-                            <span className="text-gold-primary font-mono text-sm tracking-widest mb-2 block">BONUS</span>
                             <h2 className="text-3xl font-bold tracking-widest text-white mb-8">TIMELINE OF EXCELLENCE</h2>
                         </motion.div>
 

@@ -39,7 +39,8 @@ export function FooterNewsletterForm() {
                     disabled={isPending}
                     className="absolute right-0 top-1/2 -translate-y-1/2 text-white hover:text-gold-primary transition-colors disabled:text-gray-500"
                 >
-                    {isPending ? '...' : '→'}
+                    {isPending ? '...' : '→'
+                    }
                 </button>
             </div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">

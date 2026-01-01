@@ -18,7 +18,7 @@ export function SubscriptionPopup({ isVisible, onClose, defaultTab = "PREMIUM", 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-black-primary/90 backdrop-blur-md"
+                        className="absolute inset-0 bg-black-primary/20 backdrop-blur-md"
                         onClick={onClose}
                     />
 
@@ -30,7 +30,7 @@ export function SubscriptionPopup({ isVisible, onClose, defaultTab = "PREMIUM", 
                         style={{
                             scrollbarWidth : "none"
                         }}
-                        className="relative w-full max-w-3xl h-[80vh] overflow-y-auto border border-gold-primary/30"
+                        className="relative w-full max-w-2xl h-[80vh] overflow-y-auto border border-gold-primary/30"
                     >
                         <SubscriptionPlans defaultTab={defaultTab} />
                     </motion.div>

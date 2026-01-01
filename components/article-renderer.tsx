@@ -3,18 +3,19 @@
 
 import React, { useMemo, ReactElement, JSX } from "react";
 import parse, { DOMNode, Element, domToReact } from "html-react-parser";
+import { AdBanner } from "@/components/ads/AdBanner";
 import { useSession } from "@/hooks/use-session";
 
 interface ArticleRendererProps {
   htmlContent: string;
-  ads: ReactElement[];
   isPremium?: boolean;
   canAccess?: boolean;
   onLogin?: () => void;
   onUpgrade?: () => void;
+  ads?: (JSX.Element | null)[];
 }
 
-export function ArticleRenderer({ htmlContent, ads, isPremium = false, canAccess = false, onLogin, onUpgrade }: ArticleRendererProps) {
+export function ArticleRenderer({ htmlContent, isPremium = false, canAccess = false, onLogin, onUpgrade, ads = [] }: ArticleRendererProps) {
   const content = useMemo(() => {
     if (!htmlContent) return null;
 
@@ -51,17 +52,26 @@ export function ArticleRenderer({ htmlContent, ads, isPremium = false, canAccess
     const contentArray = Array.isArray(parsedContent) ? parsedContent : [parsedContent];
 
     // Inject Ads
-    if (ads.length > 0 && contentArray.length > 4) {
+    if (contentArray.length > 4 && ads.length > 0) {
       const injectedContent: (JSX.Element | string)[] = [];
-      const interval = Math.floor(contentArray.length / (ads.length + 1));
-      let adIndex = 0;
+      // Calculate interval:
+      // - Ensure we spread ads evenly.
+      // - Ensure we don't spam: minimum 3 paragraphs between ads.
+      // - If we have too many ads for the content length, we prioritize spacing over showing all ads.
+      const rawInterval = Math.floor(contentArray.length / (ads.length + 1));
+      const interval = Math.max(3, rawInterval); // Minimum 3 nodes between ads
 
+      let adIndex = 0;
       contentArray.forEach((node, index) => {
         injectedContent.push(node);
-        // Inject ad after every 'interval' blocks, but not at the very end
-        if ((index + 1) % interval === 0 && adIndex < ads.length && index !== contentArray.length - 1) {
+        // Inject if:
+        // 1. It's an interval match
+        // 2. Not the last element
+        // 3. We have ads left
+        // 4. We are at least a few paragraphs in (index > 1) to avoid ad immediately at top
+        if (index > 1 && (index + 1) % interval === 0 && index !== contentArray.length - 1 && adIndex < ads.length) {
           injectedContent.push(
-            <div key={`ad-${adIndex}`} className="my-12 flex justify-center w-full">
+            <div key={`ad-container-${index}`} className="my-12">
               {ads[adIndex]}
             </div>
           );
@@ -69,8 +79,6 @@ export function ArticleRenderer({ htmlContent, ads, isPremium = false, canAccess
         }
       });
       if (isPremium && !canAccess) {
-        // Truncate if premium and no access
-        // If we have mixed content (string | JSX), slicing is safe enough for visual truncation
         return injectedContent.length > 3 ? injectedContent.slice(0, 3) : injectedContent;
       }
       return injectedContent;
@@ -81,7 +89,7 @@ export function ArticleRenderer({ htmlContent, ads, isPremium = false, canAccess
     }
 
     return contentArray;
-  }, [htmlContent, ads, isPremium, canAccess]);
+  }, [htmlContent, isPremium, canAccess, ads]);
 
   const { session } = useSession();
   const showGuardrail = isPremium && !canAccess;
@@ -92,7 +100,7 @@ export function ArticleRenderer({ htmlContent, ads, isPremium = false, canAccess
       {content}
 
       {showGuardrail && (
-        <div className="absolute inset-x-0 bottom-0 h-[400px] bg-gradient-to-b from-transparent via-gold-primary/10 to-gold-primary/20 flex flex-col items-center justify-end pb-12 z-20 ">
+        <div className="absolute inset-x-0 bottom-0 h-[400px] bg-linear-to-b from-transparent via-gold-primary/10 to-gold-primary/20 flex flex-col items-center justify-end pb-12 z-20 ">
           <div className="text-center max-w-md p-6 border bg-black-primary border-gold-primary/30 ">
             <h3 className="text-2xl text-gold-primary mb-4">Premium Content</h3>
             <p className="text-muted-foreground mb-8">

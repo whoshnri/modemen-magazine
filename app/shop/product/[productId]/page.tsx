@@ -9,6 +9,8 @@ import {
 import Link from "next/link";
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 // This tells Next.js to generate metadata for the page (good for SEO)
 export async function generateMetadata({
   params,
@@ -49,6 +51,7 @@ export default async function ProductPage({
   let error = false;
 
   try {
+    console.log(`[PAGE DEBUG] Handling product page for ID: "${productId}"`);
     product = await getProductById(productId);
     if (product) {
       relatedProducts = await getRelatedProducts(

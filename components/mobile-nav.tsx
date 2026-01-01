@@ -11,17 +11,16 @@ const navItems = [
   { label: 'Culture', href: '/articles/culture' },
   { label: 'Business & Money', href: '/articles/business-money' },
   { label: 'Shop', href: '/shop' },
-  { label: "Interviews", href: '/articles/interviews' },
-  {label : "Events", href: '/events'},
   { label: 'Advertise', href: '/advertise' },
 ]
 
 interface props {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
+  bannershowing: boolean;
 }
 
-export function MobileNav({ isOpen, setIsOpen }: props) {
+export function MobileNav({ isOpen, setIsOpen, bannershowing }: props) {
 
   return (
     <div className="flex items-center">
@@ -49,7 +48,7 @@ export function MobileNav({ isOpen, setIsOpen }: props) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 top-16 bg-black-primary border-t border-border z-40 overflow-y-auto"
+            className={`fixed inset-0 top-16 bg-black-primary border-t border-border z-40 overflow-y-auto ${bannershowing ? 'mt-10' : ''}`}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}

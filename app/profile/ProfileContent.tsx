@@ -8,6 +8,7 @@ import { getUserProfilePageData } from "@/app/actions/profileOps";
 import { ProfileClient, ProfileUser } from "@/components/ProfileClient";
 import { Suspense, useEffect, useState } from "react";
 import { $Enums, Address, Order } from "@/lib/generated/prisma/client"
+import Spinner from "@/components/spinner";
 
 type useData = {
     cart: {
@@ -93,6 +94,8 @@ export function Body({
     const [message, setMessage] = useState<string | null>(null);
 
 
+    const [isLoading, setIsLoading] = useState(true);
+
     if (!session) {
         redirect("/login?redirect=/profile");
     }
@@ -100,12 +103,32 @@ export function Body({
     useEffect(() => {
         async function fetchData() {
             if (!session) return;
-            const { data: user, message } = await getUserProfilePageData(session.id);
-            setUser(user);
-            setMessage(message);
+            try {
+                const { data: user, message } = await getUserProfilePageData(session.id);
+                setUser(user);
+                setMessage(message);
+            } catch (error) {
+                console.error("Failed to load profile", error);
+                setMessage("An unexpected error occurred.");
+            } finally {
+                setIsLoading(false);
+            }
         }
         fetchData();
     }, [session]);
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col min-h-screen bg-black-primary text-white p-4">
+                <Header />
+                <main className="flex-1 flex flex-col items-center justify-center gap-4">
+                    <Spinner />
+                    <p className="text-muted-foreground text-sm uppercase tracking-widest animate-pulse">Loading Profile...</p>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
 
     if (!user) {
         return (

@@ -12,6 +12,7 @@ import { MobileNav } from "./mobile-nav";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { NewsletterPopup } from "./newsletter-popup";
+import { useSession } from "@/hooks/use-session";
 import { SpecialInfoBanner } from "./special-info-banner";
 
 function ExpandingSearch() {
@@ -104,6 +105,7 @@ function ExpandingSearch() {
 }
 
 export function Header() {
+  const { session } = useSession();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false);
@@ -124,28 +126,30 @@ export function Header() {
 
   return (
 
-      <div className="sticky top-0 z-50 w-full bg-black-primary border-b border-border transition-all duration-300">
-        <SpecialInfoBanner isVisible={isVisible} setIsVisible={setIsVisible} />
-        
-        <div className="px-4 sm:px-6 py-4 flex items-center justify-between gap-4 relative border-b border-border">
+    <div className="sticky top-0 z-50 w-full bg-black-primary border-b border-border transition-all duration-300">
+      <SpecialInfoBanner isVisible={isVisible} setIsVisible={setIsVisible} />
 
-          {/* Left: Hamburger Menu OR Search & Subscribe */}
-          <div className="flex-1 flex justify-start items-center gap-2">
-            {/* Hamburger: Visible on Mobile OR when Scrolled on Desktop OR when Menu is Open */}
-            <div className={`${isScrolled || isOpen ? 'block' : 'md:hidden block'}`}>
-              <MobileNav isOpen={isOpen} setIsOpen={setIsOpen} />
-            </div>
+      <div className="px-4 sm:px-6 py-4 flex items-center justify-between gap-4 relative border-b border-border">
 
-            {/* Desktop Actions: Search & Subscribe (Visible when NOT Scrolled AND Menu is Closed) */}
-            <div className={`hidden ${isScrolled || isOpen ? '' : 'md:flex items-center gap-4'}`}>
-              <ExpandingSearch />
-              <button
-                onClick={() => setShowNewsletter(true)}
-                className="px-4 py-2 text-foreground border border-foreground font-bold tracking-widest hover:bg-white/80 hover:text-black-primary transition-colors text-xs uppercase"
-              >
-                SUBSCRIBE
-              </button>
-            </div>
+        {/* Left: Hamburger Menu OR Search & Subscribe */}
+        <div className="flex-1 flex justify-start items-center gap-2">
+          {/* Hamburger: Visible on Mobile OR when Scrolled on Desktop OR when Menu is Open */}
+          <div className={`${isScrolled || isOpen ? 'block' : 'md:hidden block'} `}>
+            <MobileNav isOpen={isOpen} setIsOpen={setIsOpen} bannershowing={isVisible} />
+          </div>
+
+          {/* Desktop Actions: Search & Subscribe (Visible when NOT Scrolled AND Menu is Closed) */}
+          <div className={`hidden ${isScrolled || isOpen ? '' : 'md:flex items-center gap-4'}`}>
+            <ExpandingSearch />
+            <button
+              onClick={() => setShowNewsletter(true)}
+              className="px-4 py-2 text-foreground border border-foreground font-bold tracking-widest hover:bg-white/80 hover:text-black-primary transition-colors text-xs uppercase"
+            >
+              SUBSCRIBE
+            </button>
+          </div>
+          {/* Premium Button: Visible only to Non-Premium Users */}
+          {(!session || (session.subscriptionPlan !== "PREMIUM" && session.subscriptionPlan !== "VIP")) && (
             <button
               onClick={() => setShowSubscription(true)}
               className="p-2 text-gold-primary border border-gold-primary hover:bg-gold-primary hover:text-black-primary transition-colors"
@@ -153,42 +157,42 @@ export function Header() {
             >
               <Gem className="w-4 h-4" />
             </button>
-          </div>
-
-          {/* Center: Logo */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <HeaderLogo />
-          </div>
-
-          {/* Right: Account & Cart */}
-          <div className="flex-1 flex justify-end items-center gap-4">
-            {/* <CartIcon /> */}
-            <AccountMenu />
-          </div>
+          )}
         </div>
 
-        <AnimatePresence>
-          {!isScrolled && (
-            <motion.div
-              initial={{ height: "auto", opacity: 1 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, overflow: "hidden" }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="hidden md:flex w-full bg-black-primary border-b border-border items-center justify-center"
-            >
-              <div className="px-4 sm:px-6 py-4">
-                <NavLinks />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Center: Logo */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <HeaderLogo />
+        </div>
+
+        {/* Right: Account & Cart */}
+        <div className="flex-1 flex justify-end items-center gap-4">
+          {/* <CartIcon /> */}
+          <AccountMenu />
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {!isScrolled && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1, transition: { delay: 1, duration: 0.3 } }}
+            exit={{ height: 0, opacity: 0, transition: { duration: 0.2 } }}
+            className="hidden md:flex w-full bg-black-primary border-b border-border items-center justify-center"
+          >
+            <div className="px-4 sm:px-6 py-4">
+              <NavLinks />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <NewsletterPopup isVisible={showNewsletter} setIsVisible={setShowNewsletter} />
       <SubscriptionPopup
         isVisible={showSubscription}
         onClose={() => setShowSubscription(false)}
         trigger="PAGE"
       />
-      </div>
+    </div>
 
   );
 }

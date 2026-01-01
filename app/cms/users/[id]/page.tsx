@@ -1,8 +1,8 @@
 import { getUserById, updateUserRole, updateUserSubscription } from "@/app/actions/cms/users";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { UserRoleSelect } from "./components/role-select"; 
-import { UserPlanSelect } from "./components/plan-select"; 
+import { UserRoleSelect } from "./components/role-select";
+
 
 export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -53,7 +53,9 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
 
                         <div className="space-y-2">
                             <label className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Subscription Plan</label>
-                            <UserPlanSelect userId={user.id} currentPlan={user.subscriptionPlan} />
+                            <div className="p-3 bg-white/5 border border-white/10 text-white font-mono text-sm uppercase">
+                                {user.subscriptionPlan}
+                            </div>
                         </div>
                     </div>
 

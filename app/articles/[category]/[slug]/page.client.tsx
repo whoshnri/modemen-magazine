@@ -23,7 +23,7 @@ import { ProductHoverPopup } from "@/components/product-hover-popup"; // Need to
 import { SubscriptionPopup } from "@/components/subscription-popup";
 import { LoginDialog } from "@/components/LoginModal";
 import { useSession } from "@/hooks/use-session";
-import { Article } from "@/lib/generated/prisma/client";
+import { $Enums, Ad, Article } from "@/lib/generated/prisma/client";
 
 export default function ArticlePageClient({
     slug,
@@ -35,6 +35,19 @@ export default function ArticlePageClient({
     const { session } = useSession();
     const [isLoginOpen, setIsLoginOpen] = useState(false);
     const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+    const [injectedAds, setInjectedAds] = useState<Ad[]>([]);
+
+    useEffect(() => {
+        const fetchAds = async () => {
+            if (article) {
+                const { getRandomAdByType } = await import("@/app/actions/adOps");
+                const ads = await getRandomAdByType(article.category, 10);
+                setInjectedAds(ads);
+            }
+        }
+        fetchAds();
+    }, [article]);
+
 
     useEffect(() => {
         const fectchArticle = async () => {
@@ -66,7 +79,7 @@ export default function ArticlePageClient({
                 const articleTags = article.category;
                 const fetchedRelatedArticles = await getRelatedArticles(articleTags, 0);
                 if (fetchedRelatedArticles.data.length > 0) {
-                    setRelatedArticles(fetchedRelatedArticles.data);
+                    setRelatedArticles(fetchedRelatedArticles.data.filter((article) => article.slug !== slug));
                 }
             }
         };
@@ -110,20 +123,25 @@ export default function ArticlePageClient({
     const isPremium = article.isPremium || false;
     const canAccess = !isPremium || (session?.subscriptionPlan === 'PREMIUM' || session?.subscriptionPlan === 'VIP');
 
-    const adsToInject = [
-        <HorizontalAd
-            key="ad-1"
-            title="STYLE UPGRADE"
-            description="Discover our new collection of timeless watches and premium leather goods."
-            image="/ads/watch-collection.jpg"
-            link="/shop/collections/watches"
-            backgroundColor="#0a0a0a"
-            borderColor="#2a2a2a"
-            textColor="#f5f5f5"
-        />,
-        <div key="inline-sub" className="my-8"><InlineSubscribePrompt /></div>,
 
-    ];
+
+
+    const adsToInject = (session?.subscriptionPlan === 'VIP' || session?.subscriptionPlan === 'PREMIUM')
+        ? []
+        : [
+            session?.subscriptionPlan !== 'VIP' && session?.subscriptionPlan !== 'PREMIUM' ? <div key="inline-sub" className="my-8"><InlineSubscribePrompt /></div> : null,
+            ...injectedAds.map((ad, i) => (
+                <HorizontalAd
+                    key={`dynamic-ad-${i}`}
+                    title={ad.title}
+                    image={ad.image}
+                    link={ad.link}
+                    backgroundColor="#0a0a0a"
+                    borderColor="#2a2a2a"
+                    textColor="#f5f5f5"
+                />
+            ))
+        ].filter(Boolean); // Filter out nulls
 
     return (
         <div className="min-h-screen bg-black-primary flex flex-col">
@@ -138,12 +156,12 @@ export default function ArticlePageClient({
                     transition={{ duration: 0.5 }}
                 >
                     <div className="max-w-4xl mx-auto gap-5 grid">
-                        <HorizontalAd />
+                        <HorizontalAd title={injectedAds[0]?.title || "ADS"} image={injectedAds[0]?.image || ""} link={injectedAds[0]?.link || ""} banner={true} />
                         <div className="flex items-center gap-4 mb-6 flex-wrap">
                             <span className="text-sm font-bold tracking-widest text-gold-primary uppercase">
                                 {article.category.replace(/_/g, " ")} / <span className="text-sm font-bold tracking-widest text-muted-foreground ">
                                     {article.subcategory.replace(/_/g, " ").toLocaleLowerCase()}
-                                    </span> 
+                                </span>
                             </span>
                             {isPremium && <span className="bg-gold-primary text-black-primary text-[10px] font-bold px-2 py-1 uppercase tracking-widest">Premium</span>}
                             <span className="text-sm font-bold text-muted-foreground">
@@ -192,9 +210,14 @@ export default function ArticlePageClient({
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                    <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-12">
+                    <div className={!canAccess || (!session || (session.subscriptionPlan !== 'PREMIUM' && session.subscriptionPlan !== 'VIP'))
+                        ? "max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-12"
+                        : "max-w-3xl mx-auto"}>
+
                         {/* Main Content */}
-                        <div className="lg:col-span-2">
+                        <div className={!canAccess || (!session || (session.subscriptionPlan !== 'PREMIUM' && session.subscriptionPlan !== 'VIP'))
+                            ? "lg:col-span-2"
+                            : "w-full"}>
                             <div className="prose prose-invert max-w-none prose-p:leading-relaxed prose-lg">
                                 <ArticleRenderer
                                     htmlContent={article.body}
@@ -208,21 +231,23 @@ export default function ArticlePageClient({
                             {canAccess && <EndOfArticleCTA />}
                         </div>
 
-                        {/* Sidebar Ad */}
-                        <div className="lg:col-span-1 flex flex-col gap-5">
-                            <VerticalAd
-                                title="Exclusive"
-                                description="Premium content and exclusive insights"
-                                image="/placeholder.svg?key=4dan0"
-                                width="w-full"
-                            />
-                            <VerticalAd
-                                title="VIP Access"
-                                description="Join the club."
-                                image="/placeholder.svg?key=4dan1"
-                                width="w-full"
-                            />
-                        </div>
+                        {/* Sidebar Ad - Only for non-premium or if they can't access premium content yet */}
+                        {(!session || (session.subscriptionPlan !== 'PREMIUM' && session.subscriptionPlan !== 'VIP')) && (
+                            <div className="lg:col-span-1 flex flex- gap-5 lg:flex-col">
+                                <VerticalAd
+                                    title="Exclusive"
+                                    description="Premium content and exclusive insights"
+                                    image="/placeholder.svg?key=4dan0"
+                                    width="w-full"
+                                />
+                                <VerticalAd
+                                    title="VIP Access"
+                                    description="Join the club."
+                                    image="/placeholder.svg?key=4dan1"
+                                    width="w-full"
+                                />
+                            </div>
+                        )}
                     </div>
                 </motion.section>
 

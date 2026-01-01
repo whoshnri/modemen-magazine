@@ -2,8 +2,41 @@
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import path from 'path';
+import { parse } from 'csv-parse/sync';
 import db from './prisma'; // Ensure this path is correct for your project structure
-import { EventType } from './generated/prisma/enums'; // Ensure this path matches your generated client
+import { EventType, ProductType } from './generated/prisma/enums'; // Ensure this path matches your generated client
+
+// --- STOCK CSV FILE CONFIGURATION ---
+
+interface StockFileConfig {
+  filename: string;
+  category: string;
+  itemType: ProductType;
+}
+
+const STOCK_FILES: StockFileConfig[] = [
+  { filename: 'Bags.csv', category: 'Accessories', itemType: ProductType.BAGS },
+  { filename: 'Belts.csv', category: 'Accessories', itemType: ProductType.BELTS },
+  { filename: 'Blazers.csv', category: "Men's Fashion", itemType: ProductType.BLAZERS },
+  { filename: 'Face caps.csv', category: 'Accessories', itemType: ProductType.CAPS },
+  { filename: 'Jeans.csv', category: "Men's Fashion", itemType: ProductType.JEANS },
+  { filename: 'Jogers.csv', category: "Men's Fashion", itemType: ProductType.JOGGERS },
+  { filename: "Men's Perfumes.csv", category: 'Grooming & Fragrance', itemType: ProductType.PERFUMES },
+  { filename: "Men's Sunglasses.csv", category: 'Accessories', itemType: ProductType.SUNGLASSES },
+  { filename: 'Mens Frames.csv', category: 'Accessories', itemType: ProductType.FRAMES },
+  { filename: 'Office shirts.csv', category: "Men's Fashion", itemType: ProductType.SHIRTS },
+  { filename: 'Perfumes set.csv', category: 'Grooming & Fragrance', itemType: ProductType.PERFUMES },
+  { filename: 'Polo.csv', category: "Men's Fashion", itemType: ProductType.POLOS },
+  { filename: 'Shoes.csv', category: "Men's Fashion", itemType: ProductType.SHOES },
+  { filename: 'Short Nikkas.csv', category: "Men's Fashion", itemType: ProductType.SHORTS },
+  { filename: 'Sweaters.csv', category: "Men's Fashion", itemType: ProductType.SWEATERS },
+  { filename: 'T-Shirts.csv', category: "Men's Fashion", itemType: ProductType.TSHIRTS },
+  { filename: 'wallet.csv', category: 'Accessories', itemType: ProductType.WALLETS },
+  { filename: "Women's Perfumes set.csv", category: 'Grooming & Fragrance', itemType: ProductType.PERFUMES },
+  { filename: "Women's Perfumes.csv", category: 'Grooming & Fragrance', itemType: ProductType.PERFUMES },
+  { filename: 'Womens frames.csv', category: 'Accessories', itemType: ProductType.FRAMES },
+  { filename: 'womens sunglasses.csv', category: 'Accessories', itemType: ProductType.SUNGLASSES },
+];
 
 // --- DATA DEFINITIONS ---
 
@@ -162,44 +195,6 @@ const INTERVIEWS = [
   }
 ];
 
-const SAMPLE_PRODUCTS: Record<string, any[]> = {
-  "New Arrivals": [
-    { name: "Limited Edition Bomber Jacket", price: 450.00, stock: 10, image: "/images/products/bomber.jpg", desc: "A classic reborn with modern materials." },
-    { name: "Velvet Loafers", price: 295.00, stock: 15, image: "/images/products/loafers.jpg", desc: "Luxurious comfort for evening wear." },
-    { name: "Tech-Knit Blazer", price: 350.00, stock: 20, image: "/images/products/blazer.jpg", desc: "Wrinkle-resistant elegance." },
-  ],
-  "Men's Fashion": [
-    { name: "Tailored Italian Suit", price: 1200.00, stock: 5, image: "/images/products/suit.jpg", desc: "Hand-stitched perfection from Milan." },
-    { name: "Oxford Cotton Shirt", price: 120.00, stock: 50, image: "/images/products/shirt.jpg", desc: "The staple of every gentleman's wardrobe." },
-    { name: "Slim-Fit Chinos", price: 110.00, stock: 40, image: "/images/products/chinos.jpg", desc: "Versatile trousers for any occasion." },
-  ],
-  "Accessories": [
-    { name: "Bespoke Leather Wallet", price: 150.00, stock: 25, image: "/images/products/wallet.jpg", desc: "Full-grain leather with minimal design." },
-    { name: "Aviator Sunglasses", price: 180.00, stock: 30, image: "/images/products/glasses.jpg", desc: "Timeless eye protection." },
-    { name: "Silk Pocket Square", price: 45.00, stock: 60, image: "/images/products/pocket-square.jpg", desc: "Add a splash of color to your suit." },
-  ],
-  "Grooming & Fragrance": [
-    { name: "Oud & Cedarwood Cologne", price: 220.00, stock: 15, image: "/images/products/cologne.jpg", desc: "A deep, woody scent for the night." },
-    { name: "Beard Grooming Kit", price: 85.00, stock: 35, image: "/images/products/beard-kit.jpg", desc: "Everything you need for a pristine beard." },
-    { name: "Charcoal Face Wash", price: 35.00, stock: 100, image: "/images/products/face-wash.jpg", desc: "Deep cleaning for city living." },
-  ],
-  "Lifestyle Products": [
-    { name: "Minimalist Desk Lamp", price: 120.00, stock: 20, image: "/images/products/lamp.jpg", desc: "Illuminate your workspace with style." },
-    { name: "Premium Coffee Table Book", price: 95.00, stock: 15, image: "/images/products/book.jpg", desc: "A visual journey through automotive history." },
-    { name: "Leather Weekender Bag", price: 550.00, stock: 8, image: "/images/products/bag.jpg", desc: "Perfect for quick getaways." },
-  ],
-  "Gift Guides": [
-    { name: "Executive Pen Set", price: 200.00, stock: 12, image: "/images/products/pen.jpg", desc: "For the man who still writes." },
-    { name: "Watch Winder Box", price: 350.00, stock: 10, image: "/images/products/watch-winder.jpg", desc: "Keep your automatic watches running." },
-  ],
-  "Brand Collaborations": [
-    { name: "ModeMen x Rolex Vintage", price: 15000.00, stock: 1, image: "/images/products/rolex.jpg", desc: "Exclusive curated vintage timepiece." },
-    { name: "ModeMen x Nike Streetwear", price: 250.00, stock: 20, image: "/images/products/sneakers.jpg", desc: "Limited edition sneakers." },
-  ],
-  "Advertorial Product Placement": [
-    { name: "Sponsored: Luxury SUV Experience", price: 5000.00, stock: 5, image: "/images/products/suv.jpg", desc: "Weekend rental of the latest luxury SUV." },
-  ]
-};
 
 const MOCK_ISSUES = [
   {
@@ -299,6 +294,167 @@ const MOCK_ISSUES = [
   },
 ];
 
+const ADS = [
+  {
+    title: "Rolex Submariner",
+    image: "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=500&auto=format&fit=crop&q=60",
+    link: "/shop/product/rolex-submariner",
+    active: true
+  },
+  {
+    title: "Tom Ford Suit",
+    image: "https://images.unsplash.com/photo-1594938298603-c8148c472997?w=500&auto=format&fit=crop&q=60",
+    link: "/shop/product/tom-ford-suit",
+    active: true
+  },
+  {
+    title: "Gucci Loafers",
+    image: "https://images.unsplash.com/photo-1533827432537-70133748f5c8?w=500&auto=format&fit=crop&q=60",
+    link: "/shop/product/gucci-loafers",
+    active: true
+  }
+];
+
+// --- STOCK CSV SEEDING FUNCTION ---
+
+/**
+ * Parse and seed products from stock CSV files
+ */
+async function seedStockProducts(): Promise<number> {
+  console.log('\n📦 Starting Stock Products Seeding...');
+  console.log('='.repeat(50));
+
+  const stockDir = path.join(process.cwd(), 'stock');
+  let totalProducts = 0;
+
+  // First ensure categories exist
+  const categoryMap = new Map<string, string>();
+  for (const config of STOCK_FILES) {
+    if (!categoryMap.has(config.category)) {
+      const cat = await db.category.upsert({
+        where: { name: config.category },
+        update: {},
+        create: { name: config.category, description: `Products for ${config.category}` }
+      });
+      categoryMap.set(config.category, cat.id);
+    }
+  }
+
+  for (const config of STOCK_FILES) {
+    const filePath = path.join(stockDir, config.filename);
+
+    if (!fs.existsSync(filePath)) {
+      console.log(`⚠️  File not found: ${config.filename}`);
+      continue;
+    }
+
+    interface recordSchema {
+      Designer: string | null;
+      Color: string | null;
+      Description: string | null;
+      Size: string | null;
+      Price: string | null;
+      Opening_Stock: string | null;
+    }
+
+    try {
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      const records = parse(fileContent, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+        relax_column_count: true,
+      }) as recordSchema[];
+
+      let fileProductCount = 0;
+      const categoryId = categoryMap.get(config.category)!;
+
+      for (const row of records) {
+        // Skip TOTAL rows and empty rows
+        const rowValues = Object.values(row).join('').toLowerCase();
+        if (rowValues.includes('total') || rowValues.trim() === '') continue;
+
+        // Extract fields from various column names (CSVs have inconsistent headers)
+        const designer = row['Designer'] || "Modemen"
+        const color = row['Color'] || '';
+        const description = row['Description'] || '';
+        const size = row['Size'] || '';
+
+        // Get price - handle various formats like "£ 500.00", "$250", "250"
+        let priceStr = row['Price'] || '0';
+        // Clean the price string
+        priceStr = priceStr.toString().replace(/[£$,\s]/g, '').trim();
+        const price = parseFloat(priceStr) || 0;
+
+        // Get stock quantity
+        const stockStr = row['Opening_Stock'] || '1';
+        const stock = parseInt(stockStr) || 1;
+
+        // Skip if no meaningful data
+        if (!designer && !description) continue;
+
+        // Create product name from designer + description
+        const productName = [designer, description].filter(Boolean).join(' - ') || `Product from ${config.filename}`;
+
+        // Get product type from filename for image placeholder
+
+        const productType = config.filename.replace('.csv', '').toLowerCase();
+
+        // Check for existing product with same name in category
+        const existingProduct = await db.product.findFirst({
+          where: {
+            name: productName,
+            categories: { some: { id: categoryId } }
+          }
+        });
+
+        if (existingProduct) {
+          // Update existing product
+          await db.product.update({
+            where: { id: existingProduct.id },
+            data: {
+              price: price > 0 ? price : existingProduct.price,
+              stock,
+              designer: designer || existingProduct.designer,
+              color: color || existingProduct.color,
+              size: size || existingProduct.size,
+              itemType: config.itemType,
+            }
+          });
+        } else {
+          // Create new product
+          await db.product.create({
+            data: {
+              name: productName,
+              price,
+              stock,
+              designer: designer || null,
+              color: color || null,
+              size: size || null,
+              desc: description || null,
+              itemType: config.itemType,
+              image: `/images/products/${productType}.jpg`,
+              categories: { connect: { id: categoryId } },
+            }
+          });
+          fileProductCount++;
+        }
+      }
+
+      totalProducts += fileProductCount;
+      console.log(`✅ ${config.filename.padEnd(25)} → ${fileProductCount} new products (${config.category})`);
+
+    } catch (error) {
+      console.error(`❌ Error processing ${config.filename}:`, error);
+    }
+  }
+
+  console.log('='.repeat(50));
+  console.log(`📦 Stock Seeding Complete: ${totalProducts} total new products added\n`);
+
+  return totalProducts;
+}
+
 // --- MAIN SEED FUNCTION ---
 
 async function main() {
@@ -359,43 +515,11 @@ async function main() {
     });
 
     // Create Products for this Category
-    const products = SAMPLE_PRODUCTS[categoryName] || [];
-    for (const productData of products) {
 
-      const existingProduct = await db.product.findFirst({
-        where: { name: productData.name, categories: { some: { id: category.id } } }
-      });
-
-      if (!existingProduct) {
-        await db.product.create({
-          data: {
-            name: productData.name,
-            price: productData.price,
-            stock: productData.stock,
-            image: productData.image,
-            desc: productData.desc,
-            categories: {
-              connect: { id: category.id },
-            },
-          },
-        });
-      } else {
-        // Optional: Update if needed, or just leave as is since we are just checking existence
-        // For true upsert behavior on name constraints (if unique) we would use upsert, 
-        // but since name isn't unique in schema, findFirst logic is fine, or we can update stock/price here.
-        await db.product.update({
-          where: { id: existingProduct.id },
-          data: {
-            price: productData.price,
-            stock: productData.stock,
-            image: productData.image,
-            desc: productData.desc
-          }
-        })
-      }
-    }
-    console.log(`Processed Category: ${categoryName} with ${products.length} products.`);
   }
+
+  // 3b. Seed Stock Products from CSV files
+  await seedStockProducts();
 
   // 4. Seed Events
   console.log('Seeding Events...');
@@ -502,6 +626,20 @@ async function main() {
     });
   }
   console.log(`${MOCK_ISSUES.length} Issues seeded.`);
+
+  // 7. Seed Ads
+  console.log('Seeding Ads...');
+  for (const ad of ADS) {
+    await db.ad.create({
+      data: {
+        title: ad.title,
+        image: ad.image,
+        link: ad.link,
+        active: ad.active
+      }
+    });
+  }
+  console.log(`${ADS.length} Ads seeded.`);
 
   console.log(`Seeding finished successfully.`);
 }

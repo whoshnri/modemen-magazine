@@ -10,7 +10,7 @@ import { useState } from "react";
 export function InlineSubscribePrompt() {
     const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
     return (
-        <div className="my-12 p-8 border-t border-b border-gold-primary/20 bg-gradient-to-r from-black-secondary to-black-primary relative overflow-hidden group">
+        <div className="my-12 p-8 border-t border-b border-gold-primary/20 bg-linear-to-r from-black-secondary to-black-primary relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gold-primary/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
 
             <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6">

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useToast } from "@/components/toast/use-toast";
 import { RichTextEditor } from "./rich-text-editor";
+import { ImageUploader } from "@/components/image-uploader";
 
 // Local Enum definitions to avoid build errors
 const Category = {
@@ -101,7 +102,38 @@ export function ArticleForm({ article }: { article?: Article & { category: strin
                 </div>
                 <div>
                     <label className={labelClasses}>Banner Image URL</label>
-                    <input name="bannerImage" value={formData.bannerImage} onChange={handleChange} className={inputClasses} placeholder="/uploads/..." />
+                    <div className="space-y-3">
+                        {formData.bannerImage && (
+                            <div className="relative w-full h-40 bg-gray-900 rounded-lg overflow-hidden border border-white/10">
+                                <img src={formData.bannerImage} alt="Banner Preview" className="w-full h-full object-cover" />
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({ ...prev, bannerImage: "" }))}
+                                    className="absolute top-2 right-2 bg-black/50 hover:bg-red-500/80 text-white p-1 rounded-full transition-colors"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                                </button>
+                            </div>
+                        )}
+                        <div className="flex gap-2">
+                            <input
+                                name="bannerImage"
+                                value={formData.bannerImage}
+                                onChange={handleChange}
+                                className={inputClasses}
+                                placeholder="/uploads/..."
+                            />
+                            <ImageUploader
+                                onUploadComplete={(url) => setFormData(prev => ({ ...prev, bannerImage: url }))}
+                                directory="articles"
+                                trigger={
+                                    <button type="button" className="px-4 bg-white/10 border border-white/10 hover:bg-white/20 transition-colors h-full flex items-center justify-center rounded-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold-primary"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
+                                    </button>
+                                }
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 

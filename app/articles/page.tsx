@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import ArticlesContent from './ArticlesContent';
+import Spinner from '@/components/spinner';
+
 
 export const metadata: Metadata = {
   title: 'Articles | Mode Men Magazine',
@@ -13,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function ArticlesPage() {
   return (
-    <Suspense fallback={<div>Loading articles...</div>}>
+    <Suspense fallback={<div><Spinner /></div>}>
       <ArticlesContent />
     </Suspense>
   );

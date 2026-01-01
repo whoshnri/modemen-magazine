@@ -199,12 +199,12 @@ function Page({ router, searchParams }: PageProps) {
                             {!isPending && articles.length === 0 && <p className="text-center text-muted-foreground mt-12">No articles found.</p>}
                         </div>
                     </motion.section>
-
+{/* 
                     <section className="px-4 sm:px-6 py-8 sm:py-12">
                         <div className="max-w-6xl mx-auto">
                             <SingleAd />
                         </div>
-                    </section>
+                    </section> */}
 
                     {hasMore && (
                         <div className="text-center py-6">

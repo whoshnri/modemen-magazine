@@ -94,19 +94,43 @@ model Category {
   products    Product[] @relation("ProductCategory")
 }
 
+enum ProductType {
+  BAGS
+  BELTS
+  BLAZERS
+  CAPS
+  JEANS
+  JOGGERS
+  PERFUMES
+  SUNGLASSES
+  FRAMES
+  SHIRTS
+  POLOS
+  SHOES
+  SHORTS
+  SWEATERS
+  TSHIRTS
+  WALLETS
+  OTHER
+}
+
 model Product {
-  id         String     @id @default(cuid())
-  name       String
-  price      Float
-  desc       String?
-  stock      Int         @default(0)
-  image      String
-  categories Category[]  @relation("ProductCategory")
-  cartItems  CartItem[]
-  orderItems OrderItem[]
-  savedBy     User[]    @relation("SavedProducts")
-  isAffiliate Boolean   @default(false)
-  affiliateLink String?
+  id              String      @id @default(cuid())
+  name            String
+  price           Float
+  desc            String?
+  size            String?
+  designer        String?
+  color           String?
+  itemType        ProductType?
+  stock           Int         @default(0)
+  image           String
+  categories      Category[]  @relation("ProductCategory")
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  savedBy         User[]      @relation("SavedProducts")
+  isAffiliate     Boolean     @default(false)
+  affiliateLink   String?
   affiliateVendor String?
 }
 
@@ -288,3 +312,14 @@ model Discount {
   orders       Order[]
 }
 
+
+model Ad {
+  id        String   @id @default(cuid())
+  title     String
+  image     String
+  link      String
+  type      Tag[]
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
